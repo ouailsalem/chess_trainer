@@ -1,5 +1,5 @@
 /* Offline support: the app's own files are cached on first visit. Bump VERSION when you upload new files. */
-const VERSION = "v1";
+const VERSION = "v9";
 const CORE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-maskable.png",
   "stockfish-19-lite-single.js", "stockfish-19-lite-single.wasm"];
 self.addEventListener("install", e => {
