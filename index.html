@@ -1543,12 +1543,12 @@ function revNext(){
 function revGo(only){
   const l=REV.l;REV.cur=null;REV.cur2=null;REV.armed=true;REV.phase=only?2:1;ENG.busy=true;ENG.key=null;
   engPost("position startpos"+(REV.i?" moves "+l.u.slice(0,REV.i).join(" "):""));
-  engPost("go depth "+revDepth()+(only?" searchmoves "+only:""));
+  engPost("go depth "+(REV.i<8?Math.min(revDepth(),10):revDepth())+" movetime "+(ENG.big&&ENG.mt?1500:ENG.local?700:500)+(only?" searchmoves "+only:""));
 }
 function revGot(){
   if(!REV.on)return;const l=REV.l,i=REV.i;
   if(REV.phase===1){REV.ev[i]=REV.cur||{t:"cp",v:0,pv:""};REV.sec[i]=REV.cur2;
-    if(i<l.m.length&&REV.ev[i].pv&&REV.ev[i].pv!==l.u[i]){setTimeout(()=>revGo(l.u[i]),0);return}}   /* 2nd search: the move actually played, same root, same depth */
+}   /* the played move is judged from the next position's eval: one search per position */
   else REV.pl[i]=REV.cur;
   REV.i++;if(l===S.exl&&(REV.i%2===0))draw();setTimeout(revNext,0);
 }
