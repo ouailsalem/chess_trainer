@@ -1742,7 +1742,7 @@ function botPlay(u){
 function botUndo(){
   if(BOT.think||BOT.over)return;const l=S.exl;if(!l.m.length)return;
   let n=l.m.length-1;while(n>0&&n%2!==U())n--;if(n%2!==U())n=0;
-  l.m.length=n;l.u.length=n;BOT.st=newState();BOT.book=BOTOPT.start==="book";BOT.cands=LINES.map((x,i)=>i).filter(i=>LINES[i].c===UI.side&&inFav(LINES[i]));
+  l.m.length=n;l.u.length=n;BOT.st=newState();BOT.book=BOTOPT.start==="book";BOT.cands=LINES.map((x,i)=>i).filter(i=>LINES[i].c===UI.side);
   l.u.forEach((u,i)=>{BOT.st=make(BOT.st,parseUci(u));if(BOT.book){const nx=BOT.cands.filter(k=>LINES[k].u[i]===u);if(nx.length)BOT.cands=nx;else BOT.book=false}});
   S.ply=S.v=n;S.sel=-1;S.st=["info",T("تراجعتَ. دورك")];draw();botTurn();
 }
@@ -1932,13 +1932,13 @@ $("b-vis").addEventListener("click",()=>{
 /* ---- bot: choose strength and where the game starts ---- */
 const BOTOPT={start:UI.botStart||(UI.botBook===false?"free":"book"),g:"",li:-1};
 function botSetupHTML(){
-  const mine=LINES.map((l,i)=>i).filter(i=>LINES[i].c===UI.side&&!LINES[i].e&&inFav(LINES[i])),gs=[...new Set(mine.map(i=>LINES[i].g))];
+  const mine=LINES.map((l,i)=>i).filter(i=>LINES[i].c===UI.side),gs=[...new Set(mine.map(i=>LINES[i].g))].sort((a,b)=>(FAV.size?(isFav(LINES[mine.find(i=>LINES[i].g===b)])-isFav(LINES[mine.find(i=>LINES[i].g===a)])):0));
   if(!gs.includes(BOTOPT.g))BOTOPT.g=gs[0]||"";
   const ls=mine.filter(i=>LINES[i].g===BOTOPT.g);if(!ls.includes(BOTOPT.li))BOTOPT.li=ls.length?ls[0]:-1;
   const elo=UI.botElo||1400,opt=(v,t,s)=>'<option value="'+v+'"'+(s?" selected":"")+'>'+t+'</option>';
   let h=T('<div class="ex b">قوة البوت</div><select class="inp" data-bs="elo">')+[800,1000,1200,1400,1600,1800,2000,2200,2500,3200].map(v=>opt(v,v>=3000?T("أقصى قوة"):T("تقريباً ")+v,v===elo)).join("")+'</select>'+
     T('<div class="ex b">من أين تبدأ المباراة؟</div><div class="wpbtns">')+[["book",T("من ريبرتواري")],["line",T("من خط أختاره")],["free",T("حرة من النقلة الأولى")]].map(x=>'<button data-bst="'+x[0]+'" aria-pressed="'+(BOTOPT.start===x[0])+'">'+x[1]+'</button>').join("")+'</div>';
-  if(BOTOPT.start==="line")h+=T('<div class="ex b">القسم</div><select class="inp" data-bs="g">')+gs.map(g=>opt(esc(g),esc(g),g===BOTOPT.g)).join("")+'</select>'+
+  if(BOTOPT.start==="line")h+=T('<div class="ex b">القسم</div><select class="inp" data-bs="g">')+BK.filter(b=>b.c===UI.side).map(b=>{const og=bkOps(b).map(o=>o.g).filter(g=>gs.includes(g));return og.length?'<optgroup label="'+esc(plain(bkT(b)))+'">'+og.map(g=>opt(esc(g),esc(opName(g)),g===BOTOPT.g)).join("")+'</optgroup>':""}).join("")+'</select>'+
     T('<div class="ex b">الخط</div><select class="inp" data-bs="li" dir="ltr">')+ls.map(i=>opt(i,esc(LINES[i].op+" · "+LINES[i].name),i===BOTOPT.li)).join("")+'</select>'+
     (BOTOPT.li>=0?'<div class="ex b"><bdi dir="ltr">'+LINES[BOTOPT.li].m.map((m,j)=>(j%2?"":(j/2+1)+".")+m[1]).join(" ")+'</bdi></div>':"");
   else if(BOTOPT.start==="book")h+=T('<div class="ex b">البوت يلعب ردود خطوطك ما دمت داخلها، ثم يكمل وحده.</div>');
@@ -1946,7 +1946,7 @@ function botSetupHTML(){
 }
 function botBegin(){
   S.botv="run";S.exl={op:"",name:"",c:UI.side,m:[],u:[],bot:1};BOT.st=newState();BOT.over="";BOT.note="";BOT.book=BOTOPT.start==="book";
-  BOT.cands=LINES.map((l,i)=>i).filter(i=>LINES[i].c===UI.side&&inFav(LINES[i]));
+  BOT.cands=LINES.map((l,i)=>i).filter(i=>LINES[i].c===UI.side);
   if(BOTOPT.start==="line"&&BOTOPT.li>=0){LINES[BOTOPT.li].m.forEach(m=>{S.exl.m.push(m.slice());S.exl.u.push(m[0]);BOT.st=make(BOT.st,parseUci(m[0]))})}
   const n=S.exl.m.length;
   reset({li:0,ply:n,v:n,st:["info",n?T("تبدأ المباراة من نهاية الخط. ")+(n%2===U()?T("دورك."):T("البوت يلعب.")):UI.side==="w"?T("مباراة جديدة. ابدأ."):T("مباراة جديدة. البوت يبدأ.")]});draw();botTurn();
