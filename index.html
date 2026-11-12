@@ -276,6 +276,30 @@ summary{cursor:pointer;font-weight:500}
 .pips i.on{background:var(--good)}
 @media (prefers-reduced-motion:no-preference){.sq.bad{animation:sh .25s}}
 @keyframes sh{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+/* ---- home: a hue per section, warmer light theme, a little depth ---- */
+:root{--hue:var(--accent);--hue-l:#1d8a78;--hue-p:#4b5fc7;--paper2:#e7ece8}
+:root[data-theme="dark"]{--hue-l:#4cc2ac;--hue-p:#8d9bf0;--paper2:#101a1d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--hue-l:#4cc2ac;--hue-p:#8d9bf0;--paper2:#101a1d}}
+.t-lib{--hue:var(--accent)}.t-train{--hue:var(--hue-l)}.t-play{--hue:var(--hue-p)}
+#home .tile{position:relative;overflow:hidden;background:linear-gradient(155deg,color-mix(in srgb,var(--hue) 9%,var(--card)) 0%,var(--card) 58%);border-color:color-mix(in srgb,var(--hue) 14%,var(--line));transition:transform .12s ease,box-shadow .12s ease}
+#home .tile>.ic{background:color-mix(in srgb,var(--hue) 14%,transparent);color:var(--hue)}
+#home .tile:active{transform:scale(.97)}
+@media (hover:hover){#home .tile:hover{box-shadow:0 2px 4px #11272b14,0 10px 22px color-mix(in srgb,var(--hue) 18%,transparent);transform:translateY(-1px)}}
+#home .tile.wide{grid-column:1/-1}
+.mrgrid.all{grid-template-columns:1fr 1fr}.mrc.wide{grid-column:1/-1}
+.mrc .side{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;color:var(--muted)}
+.mrc .side i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink);display:inline-block}
+.mrc .side i.b{background:var(--ink)}
+.mrc{transition:transform .12s ease}.mrc:active{transform:scale(.97)}
+.resume{position:relative;overflow:hidden;background:linear-gradient(120deg,var(--accent),color-mix(in srgb,var(--accent) 72%,#5a2600));padding:12px 14px}
+.resume::after{content:"";position:absolute;inset:0;opacity:.09;pointer-events:none;
+  background:conic-gradient(#fff 25%,transparent 0 50%,#fff 0 75%,transparent 0) 0 0/22px 22px;-webkit-mask:linear-gradient(90deg,transparent 30%,#000);mask:linear-gradient(90deg,transparent 30%,#000)}
+:root[dir="rtl"] .resume::after{-webkit-mask:linear-gradient(270deg,transparent 30%,#000);mask:linear-gradient(270deg,transparent 30%,#000)}
+.resume .rx{flex:1}
+.mb{flex:none;width:68px;height:68px;display:grid;grid-template-columns:repeat(8,1fr);border-radius:7px;overflow:hidden;box-shadow:0 2px 8px #0004;position:relative;z-index:1;direction:ltr}
+.mb>i{display:flex;align-items:center;justify-content:center;background:var(--mb-l,#eeeed2)}.mb>i.d{background:var(--mb-d,#769656)}
+.mb>i>*{width:100%;height:100%}.mb .p.t{font-size:6px}
+body[data-screen="home"]{background:linear-gradient(180deg,var(--paper2) 0,var(--paper) 260px)}
 @keyframes slidein{from{transform:translate(var(--dx,0),var(--dy,0))}to{transform:none}}
 .sq img.st,.sq .pc{will-change:transform;backface-visibility:hidden}
 .ctxrow{display:flex;gap:8px;align-items:stretch}.ctxrow .ctx{flex:1;width:auto;min-width:0}.ctxrow #b-lines{white-space:nowrap}
@@ -344,7 +368,8 @@ html[dir="rtl"] .ic.flipx{transform:scaleX(-1)}
 .menu{font-size:.88rem;padding:9px 12px}
 /* text */
 .hh{font:700 1.55rem/1.2 var(--display);letter-spacing:-.02em;margin:6px 0 0}
-.hh2{font:600 .84rem var(--body);color:var(--muted);margin:14px 2px 0}
+.hh2{font:600 .84rem var(--body);color:var(--muted);margin:14px 2px 0;display:flex;align-items:center;gap:8px}
+.hh2::before{content:"";width:16px;height:4px;border-radius:4px;background:var(--hue)}
 .hsub{margin:-6px 0 2px}
 .lnkb{align-self:flex-start;border:0;background:none;color:var(--accent);font:600 .9rem var(--body);cursor:pointer;padding:4px 0}
 /* controls */
@@ -500,12 +525,12 @@ details.pkmore summary{cursor:pointer;color:var(--muted);font-weight:600;padding
   <section id="home" class="home" aria-label="الرئيسية">
     <div id="today"></div>
     <div id="myrep"></div>
-    <div class="tiles">
+    <div class="tiles t-lib">
       <button class="tile" id="b-lib" data-ic="grid"><b>مكتبة الافتتاحيات</b><span id="t-lib"></span></button>
       <button class="tile" id="b-mix" data-ic="mix"><b>تدريب مختلط</b><span id="t-mix">اختر عدة افتتاحيات وتدرّب عليها معاً</span></button>
     </div>
-    <h3 class="hh2">تدريب</h3>
-    <div class="tiles">
+    <h3 class="hh2 t-train">تدريب</h3>
+    <div class="tiles t-train">
       <button class="tile" data-go="ps" data-ic="ps"><b>البنى البيدقية</b><span id="t-ps"></span></button>
       <button class="tile" data-go="ec" data-ic="book"><b>دروس النهايات</b><span id="t-ec"></span></button>
       <button class="tile" data-go="eg" data-ic="grid" id="tile-eg" hidden><b>أمثلة عن النهايات</b><span id="t-eg"></span></button>
@@ -515,8 +540,8 @@ details.pkmore summary{cursor:pointer;color:var(--muted);font-weight:600;padding
       <button class="tile" data-guide="1" data-ic="bulb"><b>دليل الافتتاحيات</b><span>فكرة كل افتتاحية وخططها</span></button>
       <button class="tile" data-sr="1" data-ic="play"><b>سبيدرن على YouTube</b><span>أساتذة يشرحون افتتاحيتك في Blitz وRapid</span></button>
     </div>
-    <h3 class="hh2">تحليل ولعب</h3>
-    <div class="tiles">
+    <h3 class="hh2 t-play">تحليل ولعب</h3>
+    <div class="tiles t-play">
       <button class="tile" id="b-games" data-ic="clock"><b>مبارياتي</b><span id="t-games"></span></button>
       <button class="tile" data-go="bot" data-ic="cpu"><b>العب ضد البوت</b><span id="t-bot"></span></button>
       <button class="tile" data-go="explore" data-ic="find"><b>تحليل حر</b><span>حرّك القطع مع المحرّك</span></button>
@@ -1285,6 +1310,7 @@ function applyLook(){
   const bd=$("board"),B=BOARDS[UI.board]||BOARDS[0],C=COLORS[UI.color]||COLORS[0];
   bd.style.setProperty("--sq-l",B[1]);bd.style.setProperty("--sq-d",B[2]);
   bd.style.setProperty("--pw",C[1]);bd.style.setProperty("--pb",C[2]);
+  const rs=document.documentElement.style;rs.setProperty("--mb-l",B[1]);rs.setProperty("--mb-d",B[2]);rs.setProperty("--pw",C[1]);rs.setProperty("--pb",C[2]);
   $("r-color").hidden=!!ST[(SHAPES[UI.shape]||SHAPES[0])[1]];
   [["o-board","board"],["o-shape","shape"],["o-color","color"]].forEach(([el,k])=>[...$(el).children].forEach((c,i)=>c.setAttribute("aria-pressed",i===UI[k])));
 }
@@ -2092,7 +2118,7 @@ function opStats(o){const td=today(),set=new Set(o.ls),it=ITEMS[o.c].filter(x=>s
   mast=o.ls.filter(i=>stats[id(LINES[i])]).length;return {n:o.ls.length,mast,known,tot:it.length,due,pct:it.length?Math.round(100*known/it.length):0}}
 function sumStats(ops){const a={n:0,mast:0,known:0,tot:0,due:0};ops.forEach(o=>{const t=opStats(o);for(const k in a)a[k]+=t[k]});a.pct=a.tot?Math.round(100*a.known/a.tot):0;return a}
 const bkT=b=>esc(b.t).replace(/(1\.[a-h][1-8])/,'<bdi dir="ltr">$1</bdi>'),BACK=()=>document.documentElement.dir==="rtl"?"› ":"‹ ";
-const bidiMv=t=>String(t).replace(/(\d+\.(?:\.\.)?[^\s)\u2066\u2069]+)/g,"\u2066$1\u2069");   /* keep move numbers like 1...c5 left-to-right inside Arabic text */
+const bidiMv=t=>String(t).replace(/(\d+\.(?:\.\.)?[^\s)\u2066\u2069]+(?:\s+\d+\.(?:\.\.)?[^\s)\u2066\u2069]+)*)/g,"\u2066$1\u2069");   /* keep move numbers like 1...c5 left-to-right inside Arabic text */
 const opName=g=>bidiMv(String(g).replace(/^e4: /,""));
 const okey=o=>o.c+"|"+o.g0,starB=o=>{const on=FAV.has(okey(o));return '<button class="star" data-fav="'+esc(okey(o))+'" aria-pressed="'+on+'" title="'+(on?T("في ريبرتوارك"):T("أضف إلى ريبرتوارك"))+'" aria-label="'+(on?T("في ريبرتوارك"):T("أضف إلى ريبرتوارك"))+'">'+(on?"★":"☆")+'</button>'};
 const lnN=n=>n+" "+(n===1?T("خط"):T("خطاً"));
@@ -2116,9 +2142,11 @@ function lastFind(){const o=UI.last;if(!o)return null;let li=o.li;if(!LINES[li]|
 function todayRender(){const box=$("today"),o=lastFind();
   const bk=Object.keys(srs).length>=10&&(!UI.bkAt||Date.now()-UI.bkAt>7*864e5)&&!(UI.bkSnooze&&Date.now()<UI.bkSnooze);
   let h="";if(o){const l=LINES[o.li],mv=Math.floor(o.ply/2)+1;
-    h+='<button class="resume" data-resume="1"><span class="rx"><b>'+T("تابع من حيث توقفت")+'</b><small>'+LASTM[o.m]+" · "+esc(opName(l.g))+(o.m==="learn"||o.m==="quiz"?" · "+nm(l.name)+" · "+T("النقلة")+" "+mv:"")+'</small></span><span class="rgo" aria-hidden="true">'+(document.documentElement.dir==="rtl"?"‹":"›")+'</span></button>'}
+    h+='<button class="resume" data-resume="1">'+miniBoard(o)+'<span class="rx"><b>'+T("تابع من حيث توقفت")+'</b><small>'+LASTM[o.m]+" · "+esc(opName(l.g))+(o.m==="learn"||o.m==="quiz"?" · "+nm(l.name)+" · "+T("النقلة")+" "+mv:"")+'</small></span><span class="rgo" aria-hidden="true">'+(document.documentElement.dir==="rtl"?"‹":"›")+'</span></button>'}
   if(bk)h+='<div class="bkn"><span>'+(UI.bkAt?T("آخر نسخة احتياطية منذ")+" "+Math.floor((Date.now()-UI.bkAt)/864e5)+" "+T("يوماً"):T("تقدّمك محفوظ في هذا المتصفح فقط. خذ نسخة احتياطية."))+'</span><button class="btn" data-bk2="save">'+T("نزّل نسخة")+'</button><button class="lnkb" data-bk2="later">'+T("لاحقاً")+'</button></div>';
   box.innerHTML=h}
+function miniBoard(o){try{const l=LINES[o.li];let st=newState();l.u.slice(0,o.ply).forEach(u=>{st=make(st,parseUci(u))});const fl=o.c==="b";let h="";
+  for(let r=0;r<8;r++)for(let f=0;f<8;f++){const i=fl?63-(r*8+f):r*8+f,p=st.b[i];h+='<i class="'+((r+f)%2?"d":"")+'">'+(p?pieceHTML(p):"")+'</i>'}return '<span class="mb" aria-hidden="true">'+h+'</span>'}catch(e){return ""}}
 function resumeLast(){const o=lastFind();if(!o)return;const l=LINES[o.li];
   UI.side=o.c;MIX=o.mix?new Set(o.mix):null;if(!MIX&&!pool().includes(o.li)){MIX=new Set([l.c+"|"+l.g]);TODAYMIX=true}
   setMode(o.m,o.li,true);show("train");
@@ -2155,9 +2183,9 @@ function opOf(k){const c=k[0],g0=k.slice(2);for(const b of BK){if(b.c!==c)contin
 function favOps(){const r=[];BK.forEach(b=>bkOps(b).forEach(o=>{if(FAV.has(okey(o)))r.push({b,o})}));return r}
 function myRepRender(){const fs=favOps();
   if(!fs.length){$("myrep").innerHTML='<div class="cta"><h2 class="hh">'+T("ابدأ من هنا: ماذا تلعب؟")+'</h2><p>'+T("اختر افتتاحياتك بالأبيض ودفاعاتك بالأسود. ستظهر هنا، والمراجعة اليومية والبوت والتحليل يعملون عليها فقط.")+'</p><button class="btn pri" data-pick="1">'+T("اختر ريبرتوارك")+'</button></div>';return}
-  const fam=famsAll().filter(famOn),card=f=>{const ops=f.ops.filter(o=>FAV.has(okey(o))),t=sumStats(ops);return '<button class="mrc" data-fam="'+esc(f.id)+'"><span class="mx"><b>'+esc(famName(f))+'</b><small>'+lnN(t.n)+'</small>'+dueChip(t.due)+'</span>'+ring(t.pct,36)+'</button>'};
-  const side=(c,lab)=>{const fs=fam.filter(f=>f.c===c);return fs.length?'<div class="mrside">'+lab+'</div><div class="mrgrid">'+fs.map(card).join("")+'</div>':""};
-  $("myrep").innerHTML='<div class="mrhd"><h2 class="hh">'+T("ريبرتوارك")+'</h2><button class="lnkb" data-pick="1">'+T("تعديل")+'</button></div>'+side("w",T("بالأبيض"))+side("b",T("بالأسود"))}
+  const fam=famsAll().filter(famOn),card=f=>{const ops=f.ops.filter(o=>FAV.has(okey(o))),t=sumStats(ops);return '<button class="mrc" data-fam="'+esc(f.id)+'"><span class="mx"><span class="side"><i class="'+f.c+'"></i>'+(f.c==="w"?T("بالأبيض"):T("بالأسود"))+'</span><b>'+esc(famName(f))+'</b><small>'+lnN(t.n)+'</small>'+dueChip(t.due)+'</span>'+ring(t.pct,36)+'</button>'};
+  const fz=fam.filter(f=>f.c==="w").concat(fam.filter(f=>f.c==="b"));
+  $("myrep").innerHTML='<div class="mrhd"><h2 class="hh">'+T("ريبرتوارك")+'</h2><button class="lnkb" data-pick="1">'+T("تعديل")+'</button></div><div class="mrgrid all">'+fz.map((f,i)=>i===fz.length-1&&fz.length%2?card(f).replace('class="mrc"','class="mrc wide"'):card(f)).join("")+'</div>'}
 const PKQ={"w-d4":T("ماذا تلعب بالأبيض؟"),"b-e4":T("بالأسود: بماذا ترد على 1.e4؟"),"b-d4":T("بالأسود: بماذا ترد على 1.d4؟"),"b-x":T("بالأسود: ضد البدايات الأخرى")};
 const SLOTS=[{q:T("ماذا تلعب بالأبيض؟"),bk:["w-d4","w-e4","w-x"],rec:"rp:london"},{q:T("بالأسود: بماذا ترد على 1.e4؟"),bk:["b-e4"],rec:"core:b-e4"},{q:T("بالأسود: بماذا ترد على 1.d4؟"),bk:["b-d4"],rec:"core:b-d4"},{q:T("بالأسود: ضد البدايات الأخرى"),bk:["b-x"],rec:"core:b-x"}];
 function pickRender(){const fams=famsAll(),row=(f,rec)=>'<button class="pkrow" data-pf="'+esc(f.id)+'" aria-pressed="'+famOn(f)+'"><span class="ck">✓</span><span class="px"><b>'+esc(famName(f))+(rec?'<span class="pkrec">'+T("مقترح للمبتدئين")+'</span>':"")+'</b><small>'+(f.ops.length>1?f.ops.map(o=>opName(o.g).replace(/^.*?: /,"")).join(" · "):plain(bkT(f.b)))+" · "+lnN(famN(f))+'</small></span></button>';
@@ -2417,6 +2445,7 @@ $("cl").addEventListener("click",e=>{const t=e.target;if(t.closest("[data-home]"
   const a=t.closest("[data-clp]"),b=t.closest("[data-clg]");if(a)return clPlayer(a.dataset.clp);
   if(b){const g=CLD.G[+b.dataset.clg];openGame({w:g.w,b:g.b,r:g.r,c:g.c,x:"",d:g.d,t:"",src:"",url:"",s:g.s,classic:1,p:g.p})}});
 function homeRender(){
+  document.querySelectorAll("#home .tiles").forEach(t=>{const v=[...t.children].filter(x=>!x.hidden);v.forEach(x=>x.classList.remove("wide"));if(v.length%2)v[v.length-1].classList.add("wide")});
   const td=today();bucketsRender();myRepRender();todayRender();
   $("t-puz").textContent=PUZ.length?PUZ.length+T(" لغزاً من مبارياتك"):T("حلّل مباراة لتظهر ألغازك");
   $("t-wp").textContent=WP.set?T("الدورة ")+WP.cycle+" · "+WP.i+"/"+WP.set.length:T("مجموعة ثابتة تعيدها حتى تصير تلقائية");
