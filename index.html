@@ -2402,7 +2402,9 @@ function themeApply(){const t=UI.theme||"auto";if(t==="auto")delete document.doc
 $("o-theme").addEventListener("change",()=>{UI.theme=$("o-theme").value;store("d4trainer-ui3",UI);themeApply()});themeApply();
 function sndBtn(){$("b-snd").setAttribute("aria-pressed",UI.sound!==false);$("b-snd").textContent=UI.sound!==false?T("تعمل"):T("مكتومة")}
 $("b-snd").addEventListener("click",()=>{UI.sound=UI.sound===false;store("d4trainer-ui3",UI);sndBtn();snd("move")});sndBtn();
-if(PWA&&"serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+if(PWA&&"serviceWorker" in navigator){const hadSW=!!navigator.serviceWorker.controller;let rl=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(hadSW&&!rl){rl=true;location.reload()}});
+  navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{r.update();document.addEventListener("visibilitychange",()=>{if(!document.hidden)r.update()})}).catch(()=>{})}
 applyLook();
 if(UI.side!=="b")UI.side="w";
 setSide(UI.side);
