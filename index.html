@@ -1192,8 +1192,8 @@ $("b-redo").addEventListener("click",()=>ECM()?(S.ecv==="ex"?ecEx(S.ecx):S.ecv==
 $("moves").addEventListener("click",e=>{const s=e.target.closest("span[data-j]");if(!s||S.busy)return;const j=+s.dataset.j+1;if(j<=S.ply){S.v=j;S.sel=-1;draw()}});
 $("b-an").addEventListener("click",analyse);
 $("b-next").addEventListener("click",()=>ECM()?(S.ecv==="ideas"||S.ecv==="demo"?ecDemoOrEx():S.ecv==="demo-end"?(ecHasEx()?ecEx(0):ecNextTopic()):S.ecv==="ex"?ecEx(S.ecx+1):S.ecv==="end"&&ECDx()[S.ecl+1]?ecOpen(S.ecl+1):startEc()):EGM()?(S.egv==="grid"?egLoad():egNext()):WPM()?(S.wpv==="sum"?wpLoad():wpDone(false)):BT()?(BOT.over?startBot():botEnd("l",T("استسلمتَ"))):PZ()?startPuz():GAME()?(GTAB="g",gsheet(true)):EX()?goBack():S.mode==="daily"?(S.ended?startDaily():nextItem(1)):S.mode==="cards"?newCard():start(pick()));
-function setMode(m,i){setTimeout(()=>{try{hdr()}catch(e){}},0);let need=false;
-  if(m==="quiz"){if(i!=null&&!lineLearned(LINES[i])){need=true;m="learn"}else if(i==null&&!pool().some(x=>lineLearned(LINES[x]))){need=true;m="learn"}}
+function setMode(m,i,force){setTimeout(()=>{try{hdr()}catch(e){}},0);let need=false;
+  if(m==="quiz"&&!force){if(i!=null&&!lineLearned(LINES[i])){need=true;m="learn"}else if(i==null&&!pool().some(x=>lineLearned(LINES[x]))){need=true;m="learn"}}
   else if(m==="cards"&&!cardPool().length){need=true;m="learn"}
   if(need){setMode("learn",i);S.needl=true;draw();return}
   S.ret=null;if(REV.on)revToggle();botOff();S.mode=m;MODE_IDS.forEach(x=>$("m-"+x).setAttribute("aria-pressed",x===m));
@@ -1910,7 +1910,7 @@ $("msg").addEventListener("click",e=>{if(!EGM())return;const b=e.target.closest(
 $("lname").addEventListener("click",e=>{if(e.target.closest("[data-egpick]")&&EGM())egBlank()});
 $("b-vis").addEventListener("click",()=>{
   if(EGM()){UI.egq=UI.egq!==true;store("d4trainer-ui3",UI);egLoad();return}
-  if(S.mode==="learn"||S.mode==="quiz")setMode(S.mode==="learn"?"quiz":"learn",S.li);
+  if(S.mode==="learn"||S.mode==="quiz")setMode(S.mode==="learn"?"quiz":"learn",S.li,true);
 });
 /* ---- bot: choose strength and where the game starts ---- */
 const BOTOPT={start:UI.botStart||(UI.botBook===false?"free":"book"),g:"",li:-1};
