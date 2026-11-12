@@ -397,7 +397,10 @@ html[dir="rtl"] .ic.flipx{transform:scaleX(-1)}
 /* opening pages */
 #repbody,#opbody{display:flex;flex-direction:column;gap:12px}
 .tile[hidden]{display:none}
-.oplist{display:flex;flex-direction:column;gap:8px}.oprw{display:flex;gap:6px;align-items:stretch}.oprw .oprow{flex:1;min-width:0}
+.oplist{display:flex;flex-direction:column;gap:8px}
+.opfam{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:calc(var(--r) + 4px);padding:10px;background:color-mix(in srgb,var(--card) 55%,transparent)}
+.opfh{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 4px 4px}.opfh .ox{display:flex;flex-direction:column;gap:1px}.opfh b{font-size:1rem}.opfh small{color:var(--muted);font-size:.78rem}
+.opfh .star{height:40px;width:40px;box-shadow:none}.opfam .oprow{box-shadow:none}.oprw{display:flex;gap:6px;align-items:stretch}.oprw .oprow{flex:1;min-width:0}
 .star{flex:none;width:46px;border:1px solid var(--line);border-radius:var(--r);background:var(--card);color:var(--muted);font-size:1.25rem;cursor:pointer;box-shadow:var(--sh)}
 .star[aria-pressed="true"]{color:#d9a400;border-color:#d9a40066}
 .ophero .star{align-self:flex-start;height:46px}
@@ -2055,7 +2058,8 @@ function opStats(o){const td=today(),set=new Set(o.ls),it=ITEMS[o.c].filter(x=>s
   mast=o.ls.filter(i=>stats[id(LINES[i])]).length;return {n:o.ls.length,mast,known,tot:it.length,due,pct:it.length?Math.round(100*known/it.length):0}}
 function sumStats(ops){const a={n:0,mast:0,known:0,tot:0,due:0};ops.forEach(o=>{const t=opStats(o);for(const k in a)a[k]+=t[k]});a.pct=a.tot?Math.round(100*a.known/a.tot):0;return a}
 const bkT=b=>esc(b.t).replace(/(1\.[a-h][1-8])/,'<bdi dir="ltr">$1</bdi>'),BACK=()=>document.documentElement.dir==="rtl"?"› ":"‹ ";
-const opName=g=>String(g).replace(/^e4: /,"");
+const bidiMv=t=>String(t).replace(/(\d+\.(?:\.\.)?[^\s)\u2066\u2069]+)/g,"\u2066$1\u2069");   /* keep move numbers like 1...c5 left-to-right inside Arabic text */
+const opName=g=>bidiMv(String(g).replace(/^e4: /,""));
 const okey=o=>o.c+"|"+o.g0,starB=o=>{const on=FAV.has(okey(o));return '<button class="star" data-fav="'+esc(okey(o))+'" aria-pressed="'+on+'" title="'+(on?T("في ريبرتوارك"):T("أضف إلى ريبرتوارك"))+'" aria-label="'+(on?T("في ريبرتوارك"):T("أضف إلى ريبرتوارك"))+'">'+(on?"★":"☆")+'</button>'};
 const lnN=n=>n+" "+(n===1?T("خط"):T("خطاً"));
 /* where an opening lives: its bucket and its group */
@@ -2078,7 +2082,7 @@ function srRender(){const row=o=>'<div class="srrow"><b>'+esc(opName(o.g))+'</b>
 const FAMN={larsen:T("هجوم لارسن (1.b3)"),london:T("نظام لندن"),jobava:T("جوبافا لندن"),english:T("الافتتاح الإنجليزي"),scotch:T("غامبي غورينغ")},
   COREN={"w-d4":T("1.d4 2.c4: الريبرتوار الأساسي"),"w-e4":T("1.e4: الإسبانية والخطوط الأساسية"),"w-x":T("بدايات أخرى بالأبيض"),"b-e4":T("كارو-كان"),"b-d4":T("السلاف وردود 1.d4"),"b-x":T("ردود الأسود على البدايات الأخرى")};
 function famsAll(){const F=new Map();BK.forEach(b=>bkOps(b).forEach(o=>{const rp=LINES[o.ls[0]].rp,id=rp?"rp:"+rp:"core:"+b.k;if(!F.has(id))F.set(id,{id,b,c:b.c,ops:[],rp});F.get(id).ops.push(o)}));return [...F.values()]}
-const famName=f=>f.ops.length===1?opName(f.ops[0].g):(FAMN[f.rp]||COREN[f.b.k]||plain(bkT(f.b)));
+const famName=f=>f.ops.length===1?opName(f.ops[0].g):bidiMv(FAMN[f.rp]||COREN[f.b.k]||plain(bkT(f.b)));
 const famOn=f=>f.ops.some(o=>FAV.has(okey(o))),famN=f=>f.ops.reduce((a,o)=>a+o.ls.length,0);
 function famBucket(f){return {k:"f:"+f.id,m:f.b.m,c:f.c,t:famName(f),sub:plain(bkT(f.b)),gs:new Set(f.ops.map(okey)),f:()=>true}}
 function famOpen(id){const f=famsAll().find(x=>x.id===id);if(!f)return;if(f.ops.length===1){REPB=f.b;OPBACK="home";return opRender(f.ops[0].g)}repRender("f:"+id)}
@@ -2109,8 +2113,16 @@ function bucketsRender(){try{$("t-lib").textContent=BK.reduce((a,b)=>a+bkOps(b).
   return '<button class="bkt '+b.c+'" data-bk="'+b.k+'"><span class="tok">'+b.m+'</span><span class="bx"><b>'+bkT(b)+'</b><span class="bm">'+ops.length+" "+(ops.length===1?T("افتتاحية"):T("افتتاحيات"))+" · "+t.n+" "+T("خطاً")+'</span>'+dueChip(t.due)+'</span>'+ring(t.pct,46)+'</button>'}).join("");
   $("t-mix").textContent=MIX&&MIX.size?MIX.size+" "+T("افتتاحيات مختارة"):T("اختر عدة افتتاحيات وتدرّب عليها معاً")}
 function repRender(k){if(String(k).startsWith("f:")){const f=famsAll().find(x=>"f:"+x.id===k);if(!f)return show("home");REPB=famBucket(f)}else REPB=BK.find(b=>b.k===k);OPBACK="rep";const ops=bkOps(REPB).map(o=>Object.assign(o,{st:opStats(o)})).sort((a,b)=>a.st.pct-b.st.pct||a.g.localeCompare(b.g));
-  $("repbody").innerHTML=(REPB.gs?'<button class="lnkb" data-home="1">'+BACK()+T("الرئيسية"):'<button class="lnkb" data-lib="1">'+BACK()+T("مكتبة الافتتاحيات"))+'</button><h2 class="hh">'+bkT(REPB)+'</h2><p class="hintp hsub">'+T("مرتبة من الأضعف إلى الأقوى. اضغط افتتاحية للتركيز عليها.")+'</p><div class="oplist">'+
-    ops.map(o=>'<div class="oprw"><button class="oprow" data-op="'+esc(o.g)+'"><span class="ox"><span class="on">'+esc(opName(o.g))+'</span><span class="om">'+o.st.n+" "+T("خطاً")+" · "+o.st.mast+" "+T("متقن")+'</span>'+dueChip(o.st.due)+'</span>'+ring(o.st.pct,40)+'</button>'+starB(o)+'</div>').join("")+'</div>';show("rep")}
+  $("repbody").innerHTML=(REPB.gs?'<button class="lnkb" data-home="1">'+BACK()+T("الرئيسية"):'<button class="lnkb" data-lib="1">'+BACK()+T("مكتبة الافتتاحيات"))+'</button><h2 class="hh">'+bkT(REPB)+'</h2><p class="hintp hsub">'+T("مرتبة من الأضعف إلى الأقوى. اضغط افتتاحية للتركيز عليها.")+'</p><div class="oplist">'+repRows(ops)+'</div>';show("rep")}
+/* sections of the same repertoire (London: vs 1...Nf6, vs 1...d5…) sit together under one heading, with short names */
+const shortN=g=>opName(g).replace(/^[^:]*:\s*/,"");
+function repRows(ops){const row=(o,sh)=>'<div class="oprw"><button class="oprow" data-op="'+esc(o.g)+'"><span class="ox"><span class="on">'+esc(sh?shortN(o.g):opName(o.g))+'</span><span class="om">'+o.st.n+" "+T("خطاً")+" · "+o.st.mast+" "+T("متقن")+'</span>'+dueChip(o.st.due)+'</span>'+ring(o.st.pct,40)+'</button>'+starB(o)+'</div>';
+  if(REPB.gs)return ops.map(o=>row(o,1)).join("");
+  const fams=famsAll(),fid=o=>{const rp=LINES[o.ls[0]].rp;return rp?"rp:"+rp:null},seen=new Set(),out=[];
+  ops.forEach(o=>{const id=fid(o);if(id&&seen.has(id))return;const sib=id?ops.filter(x=>fid(x)===id):[o];
+    if(sib.length<2){out.push(row(o,0));return}seen.add(id);const f=fams.find(x=>x.id===id),t=sumStats(sib),on=famOn(f);
+    out.push('<div class="opfam"><div class="opfh"><span class="ox"><b>'+esc(famName(f))+'</b><small>'+lnN(t.n)+" · "+t.pct+"%"+'</small></span><button class="star" data-pf="'+esc(id)+'" aria-pressed="'+on+'" aria-label="'+(on?T("في ريبرتوارك"):T("أضف إلى ريبرتوارك"))+'">'+(on?"★":"☆")+'</button></div>'+sib.map(x=>row(x,1)).join("")+'</div>')});
+  return out.join("")}
 function opRender(g){const o=bkOps(REPB).find(x=>x.g===g);if(!o)return;OPC=o;const t=opStats(o),td=today();
   const lineState=i=>{if(stats[id(LINES[i])])return "m";const it=ITEMS[o.c].filter(x=>x.li===i);return it.some(x=>srs[x.k])?"s":"n"};
   const nl=o.ls.filter(i=>lineLearned(LINES[i])).length;
@@ -2156,7 +2168,7 @@ function opAct(a,li){const o=OPC;opFocus(o);
   setMode(a,li);show("train")}
 document.addEventListener("click",e=>{if(!["rep","op","home","pick","lib","sr"].includes(SCREEN))return;const t=e.target;
   const pf=t.closest("[data-pf]"),fa=t.closest("[data-fam]"),lb=t.closest("[data-lib]"),rs=t.closest("[data-oreset]"),mg=t.closest("[data-mg]"),mgo=t.closest("[data-mgo]"),clm=t.closest("[data-clm]");
-  if(pf){const f=famsAll().find(x=>x.id===pf.dataset.pf);if(f){const on=!famOn(f);f.ops.forEach(o=>favSet(okey(o),on));pf.setAttribute("aria-pressed",on)}return}
+  if(pf){const f=famsAll().find(x=>x.id===pf.dataset.pf);if(f){const on=!famOn(f);f.ops.forEach(o=>favSet(okey(o),on));pf.setAttribute("aria-pressed",on);if(SCREEN==="rep")repRender(REPB.k)}return}
   if(fa)return famOpen(fa.dataset.fam);if(lb)return libRender();
   if(rs)return opReset(rs);if(mg)return mgFetch(OPC);if(mgo)return mgOpen(+mgo.dataset.mgo);
   if(clm){const g=CLD.G[+clm.dataset.clm];return openGame({w:g.w,b:g.b,r:g.r,c:g.c,x:"",d:g.d,t:"",src:"",url:"",s:g.s,mop:1})}
