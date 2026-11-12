@@ -1338,6 +1338,7 @@ function simpleSan(b,u){
   return p==="P"?(x?u[0]+"x":"")+dst+(u[4]?"="+u[4].toUpperCase():""):p+x+dst;
 }
 function vbarSet(show,w,txt){const vb=$("vbar");vb.hidden=!show;if(!show)return;vb.classList.toggle("fl",FLIP());$("vbar-i").style.height=Math.max(2,Math.min(98,w)).toFixed(1)+"%";$("vbar-t").textContent=txt.replace(/^\+/,"");$("vbar-t").className=w>=50?"wt":"bt"}
+const VBL={w:50,txt:"",set:false};
 function engRender(){
   const box=$("eng"),full=engFull(),act=engActive();$("b-eng").hidden=!full;
   if(!full||!act||REV.on||!ENG.ready)vbarSet(false);
@@ -1346,10 +1347,13 @@ function engRender(){
   const i=ENG.info;let txt="…",w=50;
   if(i){const sg=(S.v+OFF())%2?-1:1,v=i.v*sg;txt=i.t==="mate"?"#"+(v>0?"":"-")+Math.abs(i.v):(v>0?"+":"")+(v/100).toFixed(2);
     w=i.t==="mate"?(v>0?100:0):50+50*(2/(1+Math.exp(-0.00368208*v))-1)}
-  if(!full){box.innerHTML=(ENG.ready?'<b>'+txt+'</b>':'<b>…</b>')+'<div class="evbar"><i style="width:'+w.toFixed(1)+'%"></i></div>';$("earrow").innerHTML="";return}
+  if(!full){if(i&&(i.d>=8||i.t==="mate"||!VBL.mset)){VBL.mw=w;VBL.mtxt=txt;VBL.mset=true}const mw=VBL.mset?VBL.mw:w,mt=VBL.mset?VBL.mtxt:txt;
+    if(!box.querySelector(".evbar"))box.innerHTML='<b></b><div class="evbar"><i style="width:'+mw.toFixed(1)+'%"></i></div>';
+    box.querySelector("b").textContent=ENG.ready?mt:"…";box.querySelector(".evbar i").style.width=mw.toFixed(1)+"%";$("earrow").innerHTML="";return}
   if(!ENG.ready){box.innerHTML=T('<span class="ar">جارٍ تحميل المحرّك…')+(ENG.stage==="main"?T(" (الطريقة الثانية)"):"")+'</span>';return}
-  if(!i){box.innerHTML=T('<span class="ar">يحلّل…</span>');$("earrow").innerHTML="";vbarSet(true,50,"");return}
-  vbarSet(true,w,txt);
+  if(!i){box.innerHTML=T('<span class="ar">يحلّل…</span>');$("earrow").innerHTML="";vbarSet(true,VBL.w,VBL.txt);return}
+  if(i.d>=8||i.t==="mate"||!VBL.set){VBL.w=w;VBL.txt=txt;VBL.set=true}
+  vbarSet(true,VBL.w,VBL.txt);
   const sg=(S.v+OFF())%2?-1:1,evs=o=>{const v=o.v*sg;return o.t==="mate"?"#"+(v>0?"":"-")+Math.abs(o.v):(v>0?"+":"")+(v/100).toFixed(2)};
   const pvs=o=>{const b=boardAt(S.v),out=[];o.pv.slice(0,8).forEach(u=>{out.push(simpleSan(b,u));applyMove(b,u)});return out.join(" ")};
   const ls=(ENG.lines||[]).filter((o,k)=>o&&(k===0||o.d>=i.d-1));if(!ls.length||ls[0]!==i)ls[0]=i;
