@@ -254,7 +254,7 @@ h1 small{display:block;font:400 .8rem var(--body);color:var(--muted)}
 .sw.g.t{font:600 17px var(--mono)}
 .sw.g svg{width:80%;height:80%;fill:#fffdf5;stroke:#1c1c1c;color:#1c1c1c}
 .sw[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
-.main{display:grid;gap:14px;grid-template-columns:1fr}
+.main{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}.main>*{min-width:0}.opn[hidden]{display:none}.panel>*{min-width:0;max-width:100%}
 @media (min-width:860px){.main{grid-template-columns:minmax(0,520px) 1fr;align-items:start}}
 .boardbox{width:100%;max-width:520px;margin:0 auto;container-type:inline-size;display:flex;flex-direction:column;gap:8px}
 .bwrap{position:relative;border-radius:10px;overflow:hidden;box-shadow:0 0 0 2px var(--ink),0 6px 18px #0002}
@@ -396,7 +396,7 @@ body[data-screen="home"]{background:linear-gradient(180deg,var(--paper2) 0,var(-
 .opinfo{border:1px solid var(--line);border-radius:10px;padding:6px 10px;margin:8px 0;background:var(--paper)}
 .opinfo summary{cursor:pointer;font-weight:600;font-size:.9rem;padding:2px 0}.opinfo summary small{display:block;font-weight:400;color:var(--muted);font-size:.8rem;margin-top:2px}
 .opi{font-size:.88rem;line-height:1.75}.opi p{margin:6px 0}.opi p.s{font-weight:600}.opi h4{margin:8px 0 2px;font-size:.85rem;color:var(--accent)}.opi ul{margin:0;padding-inline-start:18px}.opi li{margin:3px 0}
-.opi .mvx{font-family:ui-monospace,monospace;font-size:.84em;background:var(--card);border:1px solid var(--line);border-radius:5px;padding:0 4px;white-space:nowrap}
+.opi .mvx{font-family:ui-monospace,monospace;font-size:.84em;background:var(--card);border:1px solid var(--line);border-radius:5px;padding:0 4px;white-space:normal;overflow-wrap:anywhere;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .gdg{font-size:.85rem;color:var(--muted);margin:14px 0 4px}#gdsheet .seg{margin-bottom:6px}
 html[dir="ltr"] .drawer{animation-name:slideL}@keyframes slideL{from{transform:translateX(-100%)}to{transform:none}}
 .eng .ehead{flex-basis:100%;font-size:.75rem;color:var(--muted)}.eng .eline{flex-basis:100%;display:flex;gap:8px;align-items:baseline;font-size:.82rem;opacity:.8}.eng .eline.e1{opacity:1}
@@ -1489,7 +1489,7 @@ SHAPES.forEach((s,i)=>opt("o-shape","shape",i,s[0],ST[s[1]]?'<img class="st" alt
 COLORS.forEach((c,i)=>opt("o-color","color",i,c[0],'<i style="background:'+c[1]+'"></i><i style="background:'+c[2]+'"></i>'));
 /* ---- engine: Stockfish in a worker, loaded only when the button is pressed ---- */
 const ENG={m:null,stage:"",why:"",w:null,on:false,ready:false,busy:false,pending:false,key:null,info:null,fail:false,timer:0};
-const PWA=true,APPV="v67";
+const PWA=true,APPV="v68";
 /* version label (home + settings); tap it to check for an update and force it if one is waiting */
 function appvPaint(x){document.querySelectorAll("[data-appv]").forEach(b=>b.textContent=x||(T("النسخة")+" "+APPV+" · "+T("تحقّق من التحديث")))}
 async function appvCheck(){
