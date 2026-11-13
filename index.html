@@ -2292,9 +2292,6 @@ function todayRender(){const box=$("today"),o=lastFind();
   let h="";if(o){const l=LINES[o.li],mv=Math.floor(o.ply/2)+1;
     h+='<button class="resume" data-resume="1">'+miniBoard(o)+'<span class="rx"><b>'+T("تابع من حيث توقفت")+'</b><small>'+LASTM[o.m]+" · "+esc(opName(l.g))+(o.m==="learn"||o.m==="quiz"?" · "+nm(l.name)+" · "+T("النقلة")+" "+mv:"")+'</small></span><span class="rgo" aria-hidden="true">'+(document.documentElement.dir==="rtl"?"‹":"›")+'</span></button>'}
   if(bk)h+='<div class="bkn"><span>'+(UI.bkAt?T("آخر نسخة احتياطية منذ")+" "+Math.floor((Date.now()-UI.bkAt)/864e5)+" "+T("يوماً"):T("تقدّمك محفوظ في هذا المتصفح فقط. خذ نسخة احتياطية."))+'</span><button class="btn" data-bk2="save">'+T("نزّل نسخة")+'</button><button class="lnkb" data-bk2="later">'+T("لاحقاً")+'</button></div>';
-  if(FAV.size){const st=tdSteps(),due=dueFav(),td=tdState();
-    const lab={rev:[T("مراجعة"),due?due+" "+T("مستحقة"):"✓"],new:[T("خط جديد"),st[1].ok?"✓":""],pz:[T("5 ألغاز"),Math.min(td.pz,5)+"/5"]};
-    h+='<div class="goal">'+st.map(s=>'<button class="gch'+(s.ok?' ok':'')+'" data-td="'+s.k+'">'+(s.ok?"✓ ":"")+lab[s.k][0]+(lab[s.k][1]&&lab[s.k][1]!=="✓"?'<small>'+lab[s.k][1]+'</small>':'<small>'+(s.ok?T("تمّ"):T("اليوم"))+'</small>')+'</button>').join("")+'</div>'}
   box.innerHTML=h}
 function miniBoard(o){try{const l=LINES[o.li];let st=newState();l.u.slice(0,o.ply).forEach(u=>{st=make(st,parseUci(u))});const fl=o.c==="b";let h="";
   for(let r=0;r<8;r++)for(let f=0;f<8;f++){const i=fl?63-(r*8+f):r*8+f,p=st.b[i];h+='<i class="'+((r+f)%2?"d":"")+'">'+(p?pieceHTML(p):"")+'</i>'}return '<span class="mb" aria-hidden="true">'+h+'</span>'}catch(e){return ""}}
@@ -2640,7 +2637,7 @@ const MODE_T={daily:T("مراجعة"),learn:T("تعلّم"),quiz:T("اختبار
 const plain=h=>{const d=document.createElement("div");d.innerHTML=h;return d.textContent};
 function hdr(){let t=T("مدرّب الافتتاحيات"),sub="";
   const fav=LINES.filter(l=>isFav(l)),mast=fav.filter(l=>stats[id(l)]).length;
-  if(SCREEN==="home")sub=fav.length?(()=>{const d=tdSteps().filter(x=>x.ok).length,sk=streakN();return T("هدف اليوم")+" "+d+"/3"+(sk?" · "+T("سلسلة")+" "+sk+" "+(sk===1?T("يوم"):T("أيام")):"")})():"";
+  if(SCREEN==="home"){const sk=fav.length?streakN():0;sub=sk>1?T("سلسلة")+" "+sk+" "+T("أيام"):""}
   else if(SCREEN==="settings")t=T("الإعدادات");
   else if(SCREEN==="rep"&&REPB){t=plain(REPB.t);sub=REPB.sub||""}
   else if(SCREEN==="op"&&OPC){t=opName(OPC.g);sub=REPB?plain(REPB.t):""}
