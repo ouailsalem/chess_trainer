@@ -457,6 +457,7 @@ html[dir="ltr"] .drawer{animation-name:slideL}@keyframes slideL{from{transform:t
 .qtab .qi{position:static;display:inline-flex;width:1.6em;height:1.6em;min-width:0;font-size:.7rem;margin-inline-end:6px;vertical-align:middle}
 .qtab td.n.q-br{color:#1baaa6}.qtab td.n.q-gr{color:#4f7fb5}.qtab td.n.q-be{color:#6aa33a}.qtab td.n.q-in{color:#c79a12}.qtab td.n.q-mi{color:#e07b1a}.qtab td.n.q-ms{color:#e0604c}.qtab td.n.q-bl{color:#c5302b}
 .brow{display:flex;gap:6px;align-items:stretch}.brow .bwrap{flex:1;min-width:0}
+.hbar{direction:ltr;display:flex;align-items:center;gap:8px;margin:0 0 6px;font:600 .82rem var(--mono)}.hbar[hidden]{display:none}.hbar b{min-width:3.4em;text-align:center}
 .vbar{width:16px;flex-shrink:0;border-radius:6px;background:#403d39;position:relative;overflow:hidden;box-shadow:0 0 0 1px var(--line)}
 .vbar i{position:absolute;left:0;right:0;bottom:0;background:#f4f1e8;transition:height .35s ease}.vbar.fl i{bottom:auto;top:0}
 .vbar b{position:absolute;left:0;right:0;font:600 8px/1 var(--mono);text-align:center;writing-mode:vertical-rl;transform:rotate(180deg);padding:3px 0}
@@ -875,6 +876,7 @@ details.ldet summary{cursor:pointer;color:var(--accent);font-weight:600;font-siz
   </aside>
   <div class="main">
     <div class="boardbox">
+      <div class="hbar" id="hbar" hidden><b id="hbar-t"></b><div class="evbar"><i id="hbar-i"></i></div></div>
       <div class="brow"><div class="vbar" id="vbar" hidden><i id="vbar-i"></i><b id="vbar-t"></b></div>
       <div class="bwrap" id="bwrap">
         <span class="varchip" id="varchip" hidden></span>
@@ -1594,7 +1596,7 @@ SHAPES.forEach((s,i)=>opt("o-shape","shape",i,s[0],ST[s[1]]?'<img class="st" alt
 COLORS.forEach((c,i)=>opt("o-color","color",i,c[0],'<i style="background:'+c[1]+'"></i><i style="background:'+c[2]+'"></i>'));
 /* ---- engine: Stockfish in a worker, loaded only when the button is pressed ---- */
 const ENG={m:null,stage:"",why:"",w:null,on:false,ready:false,busy:false,pending:false,key:null,info:null,fail:false,timer:0};
-const PWA=true,APPV="v76";
+const PWA=true,APPV="v77";
 /* version label (home + settings); tap it to check for an update and force it if one is waiting */
 function appvPaint(x){document.querySelectorAll("[data-appv]").forEach(b=>b.textContent=x||(T("النسخة")+" "+APPV+" · "+T("تحقّق من التحديث")))}
 async function appvCheck(){
@@ -1736,7 +1738,7 @@ function simpleSan(b,u){
   const x=b[to]||(p==="P"&&f%8!==to%8)?"x":"";
   return p==="P"?(x?u[0]+"x":"")+dst+(u[4]?"="+u[4].toUpperCase():""):p+x+dst;
 }
-function vbarSet(show,w,txt){const vb=$("vbar");vb.hidden=!show;if(!show)return;vb.classList.toggle("fl",FLIP());$("vbar-i").style.height=Math.max(2,Math.min(98,w)).toFixed(1)+"%";$("vbar-t").textContent=txt.replace(/^\+/,"");$("vbar-t").className=w>=50?"wt":"bt"}
+function vbarSet(show,w,txt){const hb=$("hbar");$("vbar").hidden=true;hb.hidden=!show;if(!show)return;$("hbar-i").style.width=Math.max(2,Math.min(98,w)).toFixed(1)+"%";$("hbar-t").textContent=txt;return;const vb=$("vbar");vb.hidden=!show;if(!show)return;vb.classList.toggle("fl",FLIP());$("vbar-i").style.height=Math.max(2,Math.min(98,w)).toFixed(1)+"%";$("vbar-t").textContent=txt.replace(/^\+/,"");$("vbar-t").className=w>=50?"wt":"bt"}
 const VBL={w:50,txt:"",set:false};
 function engRender(){
   const box=$("eng"),full=engFull(),act=engActive();$("b-eng").hidden=!full;
