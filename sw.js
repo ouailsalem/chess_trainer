@@ -1,6 +1,6 @@
 /* Offline support + cross-origin isolation (lets the engine use several CPU cores).
    Bump VERSION when you upload new files. */
-const VERSION = "v63";
+const VERSION = "v64";
 const CORE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-maskable.png",
   "stockfish-19-lite-single.js", "stockfish-19-lite-single.wasm", "stockfish-19-lite.js", "stockfish-19-lite.wasm",
   "stockfish-19.js", "stockfish-19-single.js"];
