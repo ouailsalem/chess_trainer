@@ -2151,7 +2151,7 @@ function exFromGo(){const f=EXFROM;EXFROM=null;if(!f||f.screen==="train")return 
   else{show("home");htab(f.htab||"home");if(f.htab==="me")setTimeout(()=>{meRender();if(f.eff)effRender()},20)}
   if(f.gs){GTAB=f.gtab;gsheet(true)}if(f.tr)trOpen(true);
   setTimeout(()=>{try{window.scrollTo(0,f.y)}catch(e){}},60);return true}
-function openAt(c,path){exFromSave();gsheet(false);show("train");if(UI.side!==c)setSide(c);S.ret=null;S.mode="explore";MODE_IDS.forEach(x=>$("m-"+x).setAttribute("aria-pressed",x==="explore"));startEx(path);if(!ENG.on&&!ENG.fail)$("b-eng").click()}
+function openAt(c,path){exFromSave();EXFROM.n=path.length;gsheet(false);show("train");if(UI.side!==c)setSide(c);S.ret=null;S.mode="explore";MODE_IDS.forEach(x=>$("m-"+x).setAttribute("aria-pressed",x==="explore"));startEx(path);if(!ENG.on&&!ENG.fail)$("b-eng").click()}
 function gsheet(open){$("gsheet").hidden=$("scrim").hidden=!open;if(open){$("g-name").value=GM.name||$("g-name").value;gamesRender()}}
 $("b-games").addEventListener("click",()=>gsheet(true));$("g-close").addEventListener("click",()=>gsheet(false));
 $("g-run").addEventListener("click",()=>{$("g-status").innerHTML='<span class="spin"></span>'+T("أحلّل المباريات…");setTimeout(()=>{gamesRun();$("g-status").textContent=""},30)});
@@ -2398,7 +2398,7 @@ function trOpen(open,c){$("trsheet").hidden=$("scrim").hidden=!open;if(open){TRC
 function trSide(){if(UI.side!==TRC||MIX)setSide(TRC)}
 $("trlist").addEventListener("click",e=>{const t=e.target.closest("[data-t]"),g=e.target.closest("[data-tg]"),l=e.target.closest("[data-tl]");
   if(t)trToggle(+t.dataset.t);
-  else if(g){const nd=TRN[+g.dataset.tg];exFromSave();trSide();trOpen(false);setMode("explore");show("train");startEx(nd.path.slice(),null,TRC)}
+  else if(g){const nd=TRN[+g.dataset.tg];exFromSave();EXFROM.n=nd.path.length;trSide();trOpen(false);setMode("explore");show("train");startEx(nd.path.slice(),null,TRC)}
   else if(l){trSide();trOpen(false);setMode("learn",+l.dataset.tl);show("train")}});
 $("tr-w").addEventListener("click",()=>{TRC="w";TRG=null;trRender()});$("tr-b").addEventListener("click",()=>{TRC="b";TRG=null;trRender()});
 $("b-trclose").addEventListener("click",()=>trOpen(false));
@@ -2812,7 +2812,7 @@ document.addEventListener("click",e=>{if(!["rep","op","home","pick","lib","sr"].
   if(gset){show("settings");($("xcard").classList.add("open"),$("xcard").scrollIntoView());return}
   const ga=t.closest("[data-gadd]"),gl=t.closest("[data-glearn]");if(ga)return gapAdd(OPC,+ga.dataset.gadd);if(gl)return opAct("learn",+gl.dataset.glearn);
   if(gs)return gapRun(OPC,+gs.dataset.gscan);
-  if(gp){const o=OPC,g=(XP.g[o.c+"|"+o.g0]||{gaps:[]}).gaps[+gp.dataset.gap];if(g){exFromSave();opFocus(o);setMode("explore");show("train");startEx(g.path.slice(),null,o.c)}return}
+  if(gp){const o=OPC,g=(XP.g[o.c+"|"+o.g0]||{gaps:[]}).gaps[+gp.dataset.gap];if(g){exFromSave();EXFROM.n=g.path.length;opFocus(o);setMode("explore");show("train");startEx(g.path.slice(),null,o.c)}return}
   if(hm)return show("home");if(bk)return repRender(bk.dataset.bk);if(op){OPBACK="rep";return opRender(op.dataset.op)}if(ac)return opAct(ac.dataset.act);if(dt)return opAct("learn",+dt.dataset.li);
   if(ps){setMode("ps");show("train");ecOpen(+ps.dataset.ps)}});
 /* ---- mix: several openings at once ---- */
@@ -3037,9 +3037,9 @@ document.body.dataset.htab="home";
 function htab(k){try{histTrap()}catch(e){}PATHRUN=false;if(k==="me")setTimeout(()=>{try{meRender()}catch(e){console.error(e)}},0);if(k==="pz"){PF=PFA;PFK="d4trainer-pzf";wpUse("pz");setMode("wp");show("train");return}document.body.dataset.htab=k;document.querySelectorAll("#bnav button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tab===k));try{window.scrollTo(0,0)}catch(e){}}
 $("bnav").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(b)htab(b.dataset.tab)});
 let backArm=0;
-function guardBack(){if(SCREEN!=="train")return false;const busy=(EX()&&S.ex.length>0&&!S.ret)||(BT()&&S.botv!=="setup"&&!BOT.over&&S.exl.m.length>1)||(WPM()&&S.wpv==="run"&&!S.wpFree)||(S.mode==="quiz"&&S.ply>0&&!S.done)||(GAME()&&S.v>0);
+function guardBack(){if(SCREEN!=="train")return false;const busy=(EX()&&S.ex.length>(EXFROM&&EXFROM.n||0)&&!S.ret)||(BT()&&S.botv!=="setup"&&!BOT.over&&S.exl.m.length>1)||(WPM()&&S.wpv==="run"&&!S.wpFree)||(S.mode==="quiz"&&S.ply>0&&!S.done)||(GAME()&&S.v>0);
   if(!busy||Date.now()-backArm<2500)return false;backArm=Date.now();toast(T("اضغط مرة أخرى للخروج"));return true}
-$("b-home").addEventListener("click",()=>{if(SCREEN==="train"&&EX()&&S.ret)return goBack();if(SCREEN==="train"&&EX()&&EXFROM&&exFromGo())return;if(guardBack())return;if(REV.on)revToggle();
+$("b-home").addEventListener("click",()=>{if(SCREEN==="train"&&EX()&&S.ret)return goBack();if(guardBack())return;if(SCREEN==="train"&&EX()&&EXFROM&&exFromGo())return;if(REV.on)revToggle();
   if(SCREEN==="train"&&PATHRUN){PATHRUN=false;return pathRender()}
   if(SCREEN==="pl"&&!PLHUB)return plHub();
   if(SCREEN==="train"){const g=S.mode==="game"&&S.exl&&S.exl.game;if(g&&g.plk)return plRender();if(g&&g.classic)return clPlayer(g.p);if(WPM()&&PF===PFM){PF=PFA;PFK="d4trainer-pzf";return plRender()}if(g&&g.mop&&OPC)return opRender(OPC.g);if(OPC&&!MIX&&["learn","quiz","daily","cards"].includes(S.mode))return opRender(OPC.g);return show("home")}
