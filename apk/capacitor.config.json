@@ -1,0 +1,6 @@
+{
+  "appId": "io.github.ouailsalem.chesstrainer",
+  "appName": "Opening Trainer",
+  "webDir": "www",
+  "android": { "allowMixedContent": false, "backgroundColor": "#1b2326" }
+}

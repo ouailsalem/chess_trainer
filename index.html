@@ -1762,7 +1762,7 @@ SHAPES.forEach((s,i)=>opt("o-shape","shape",i,s[0],ST[s[1]]?'<img class="st" alt
 COLORS.forEach((c,i)=>opt("o-color","color",i,c[0],'<i style="background:'+c[1]+'"></i><i style="background:'+c[2]+'"></i>'));
 /* ---- engine: Stockfish in a worker, loaded only when the button is pressed ---- */
 const ENG={m:null,stage:"",why:"",w:null,on:false,ready:false,busy:false,pending:false,key:null,info:null,fail:false,timer:0};
-const PWA=true,APPV="v98";
+const PWA=true,APPV="v99";
 /* version label (home + settings); tap it to check for an update and force it if one is waiting */
 function appvPaint(x){document.querySelectorAll("[data-appv]").forEach(b=>b.textContent=x||(T("النسخة")+" "+APPV+" · "+T("تحقّق من التحديث")))}
 async function appvCheck(){
@@ -3557,7 +3557,8 @@ function vibBtn(){const on=UI.vib!==false;$("b-vib").setAttribute("aria-pressed"
 $("b-vib").addEventListener("click",()=>{UI.vib=UI.vib===false;store("d4trainer-ui3",UI);vibBtn();buzz(20)});vibBtn();
 function fxqBtn(){const on=UI.fxq!==false;$("b-fxq").setAttribute("aria-pressed",on);$("b-fxq").textContent=on?T("مفعّل"):T("متوقف")}
 $("b-fxq").addEventListener("click",()=>{UI.fxq=UI.fxq===false;store("d4trainer-ui3",UI);fxqBtn()});fxqBtn();
-if(PWA&&"serviceWorker" in navigator){const hadSW=!!navigator.serviceWorker.controller;let rl=false;
+const CAPAPP=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());   /* inside the Android app: files are already on the phone, no service worker */
+if(PWA&&!CAPAPP&&"serviceWorker" in navigator){const hadSW=!!navigator.serviceWorker.controller;let rl=false;
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(hadSW&&!rl){rl=true;location.reload()}});
   navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{r.update();document.addEventListener("visibilitychange",()=>{if(!document.hidden)r.update()})}).catch(()=>{})}
 applyLook();
