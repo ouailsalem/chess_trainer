@@ -2,5 +2,6 @@
   "appId": "io.github.ouailsalem.chesstrainer",
   "appName": "Opening Trainer",
   "webDir": "www",
+  "server": { "allowNavigation": ["lichess.org", "*.lichess.org"] },
   "android": { "allowMixedContent": false, "backgroundColor": "#1b2326" }
 }

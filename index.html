@@ -1762,7 +1762,7 @@ SHAPES.forEach((s,i)=>opt("o-shape","shape",i,s[0],ST[s[1]]?'<img class="st" alt
 COLORS.forEach((c,i)=>opt("o-color","color",i,c[0],'<i style="background:'+c[1]+'"></i><i style="background:'+c[2]+'"></i>'));
 /* ---- engine: Stockfish in a worker, loaded only when the button is pressed ---- */
 const ENG={m:null,stage:"",why:"",w:null,on:false,ready:false,busy:false,pending:false,key:null,info:null,fail:false,timer:0};
-const PWA=true,APPV="v99";
+const PWA=true,APPV="v100";
 /* version label (home + settings); tap it to check for an update and force it if one is waiting */
 function appvPaint(x){document.querySelectorAll("[data-appv]").forEach(b=>b.textContent=x||(T("النسخة")+" "+APPV+" · "+T("تحقّق من التحديث")))}
 async function appvCheck(){
@@ -1780,7 +1780,7 @@ document.addEventListener("DOMContentLoaded",()=>appvPaint());setTimeout(()=>app
 const ENG_URL="https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js";
 const engFull=()=>EX()||GAME()||(EGM()&&S.egv==="run");
 const engActive=()=>!document.hidden&&SCREEN==="train"&&!WPM()&&(engFull()?ENG.on:UI.evalbar!==false&&!ENG.fail);
-function engPost(m){try{if(ENG.w)ENG.w.postMessage(m);else if(ENG.m)setTimeout(()=>{try{ENG.m({data:m})}catch(e){}},0)}catch(e){}}
+function engPost(m){if(ENG.nat){try{ENG.nat.send({cmd:m}).catch(()=>{})}catch(e){}return}try{if(ENG.w)ENG.w.postMessage(m);else if(ENG.m)setTimeout(()=>{try{ENG.m({data:m})}catch(e){}},0)}catch(e){}}
 function engFail(why){ENG.fail=true;ENG.on=false;clearTimeout(ENG.timer);try{ENG.w&&ENG.w.terminate()}catch(e){}ENG.w=null;$("b-eng").setAttribute("aria-pressed",false);
   $("eng").className="eng";$("eng").hidden=!engFull();$("eng").innerHTML=T('<span class="ar">تعذّر تشغيل المحرّك داخل هذه الصفحة. (')+(why||T("سبب غير معروف"))+')</span>';$("earrow").innerHTML=""}
 /* 1st try: a worker. If the page forbids it, 2nd try: load the engine in the page itself. */
@@ -1812,7 +1812,13 @@ async function fullDownload(){
 }
 async function fullBtn(){if(!PWA)return;$("r-full").hidden=false;const has=!!(await fullCached());$("b-full").textContent=has?T("احذفه"):T("تنزيل (≈95 MB)");$("b-full").dataset.has=has?"1":""}
 $("b-full").addEventListener("click",async()=>{if($("b-full").dataset.has){try{const c=await caches.open("engine-full");await c.delete(FULLKEY())}catch(e){}fullBtn();$("es-info").textContent=T("حُذف. أعد فتح التطبيق للرجوع إلى المحرّك الخفيف.");return}fullDownload()});
+/* inside the Android app: the real Stockfish binary for the phone's processor, all cores, much faster than the browser build */
+const capNative=()=>{try{return !!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform())}catch(e){return false}};
+async function engNative(){const P=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.Stockfish;if(!P)return false;
+  try{const r=await P.start();await P.addListener("line",d=>engLine(String(d&&d.line||"")));ENG.nat=P;ENG.local=true;ENG.mt=true;ENG.big=true;ENG.file="Stockfish (native)";ENG.cores=r&&r.cores||HWC;
+    if(!UI.engH)UI.engH=64;engPost("uci");ENG.timer=setTimeout(()=>{if(!ENG.ready){ENG.nat=null;ENG.local=false;engStart()}},8000);return true}catch(e){ENG.nat=null;return false}}
 async function engStart(){
+  if(!ENG.triedNat&&capNative()){ENG.triedNat=true;ENG.stage="native";if(await engNative())return}
   if(!ENG.triedLocal){   /* Stockfish 19 shipped next to the page (app files or the artifact's own files) */
     ENG.triedLocal=true;ENG.stage="local";
     const f=await engChoose();

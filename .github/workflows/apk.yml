@@ -42,6 +42,31 @@ jobs:
           npx cap add android
           npx cap sync android
 
+      - name: Native Stockfish and the plugin that runs it
+        working-directory: apk
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          url=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/official-stockfish/Stockfish/releases/latest \
+            | python3 -c "import json,sys;d=json.load(sys.stdin);print(next(a['browser_download_url'] for a in d['assets'] if a['name'].startswith('stockfish-android-armv8') and 'dotprod' not in a['name']))")
+          echo "Stockfish: $url"
+          mkdir -p /tmp/sf && curl -fsSL "$url" -o /tmp/sf/sf.tar && tar -xf /tmp/sf/sf.tar -C /tmp/sf
+          bin=$(find /tmp/sf -type f -name 'stockfish-android-armv8*' ! -name '*.tar' | head -1)
+          echo "binary: $bin"; ls -la "$bin"
+          mkdir -p android/app/src/main/jniLibs/arm64-v8a
+          cp "$bin" android/app/src/main/jniLibs/arm64-v8a/libstockfish.so
+          D=android/app/src/main/java/io/github/ouailsalem/chesstrainer
+          mkdir -p $D && cp native/StockfishPlugin.java native/MainActivity.java $D/
+          python3 - <<'PY'
+          import re
+          p="android/app/build.gradle";s=open(p).read()
+          s+="\nandroid { packagingOptions { jniLibs { useLegacyPackaging = true } } }\n"
+          open(p,"w").write(s)
+          PY
+          tail -3 android/app/build.gradle
+
       - name: App icon
         working-directory: apk
         continue-on-error: true
