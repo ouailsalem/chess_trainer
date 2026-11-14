@@ -38,13 +38,23 @@ jobs:
       - name: Create the Android project
         working-directory: apk
         run: |
+          set -x
           npx cap add android
-          mkdir -p assets
-          convert ../icon-512.png -resize 1024x1024 assets/icon-only.png
-          convert ../icon-maskable.png -resize 1024x1024 assets/icon-foreground.png
-          convert -size 1024x1024 xc:'#1b2326' assets/icon-background.png
-          npx @capacitor/assets generate --android || echo "icon generation skipped"
           npx cap sync android
+
+      - name: App icon
+        working-directory: apk
+        continue-on-error: true
+        run: |
+          pip install --quiet pillow
+          mkdir -p assets
+          python3 - <<'PY'
+          from PIL import Image
+          Image.open("../icon-512.png").convert("RGBA").resize((1024,1024)).save("assets/icon-only.png")
+          Image.open("../icon-maskable.png").convert("RGBA").resize((1024,1024)).save("assets/icon-foreground.png")
+          Image.new("RGBA",(1024,1024),(27,35,38,255)).save("assets/icon-background.png")
+          PY
+          npx @capacitor/assets generate --android
 
       - name: Build the APK
         working-directory: apk/android
