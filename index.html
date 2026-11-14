@@ -1683,7 +1683,7 @@ $("b-redo").addEventListener("click",()=>ECM()?(S.ecv==="ex"?ecEx(S.ecx):S.ecv==
 $("moves").addEventListener("click",e=>{const s=e.target.closest("span[data-j]");if(!s||S.busy)return;const j=+s.dataset.j+1;if(j<=S.ply){S.v=j;S.sel=-1;draw()}});
 $("b-an").addEventListener("click",analyse);
 $("b-next").addEventListener("click",()=>ECM()?(S.ecv==="ideas"||S.ecv==="demo"?ecDemoOrEx():S.ecv==="demo-end"?(ecHasEx()?ecEx(0):ecNextTopic()):S.ecv==="ex"?ecEx(S.ecx+1):S.ecv==="end"&&ECDx()[S.ecl+1]?ecOpen(S.ecl+1):startEc()):EGM()?(S.egv==="grid"?egLoad():egNext()):WPM()?(S.wpv==="sum"?wpLoad():S.wpFree?pfSkip():wpDone(false)):BT()?(BOT.over?startBot():botEnd("l",T("استسلمتَ"))):PZ()?startPuz():GAME()?(GTAB="g",gsheet(true)):EX()?goBack():S.mode==="daily"?(S.ended?startDaily():nextItem(1)):S.mode==="cards"?newCard():start(pick()));
-function setMode(m,i,force){setTimeout(()=>{try{hdr()}catch(e){}},0);let need=false;
+function setMode(m,i,force){if(m!=="explore")EXFROM=null;setTimeout(()=>{try{hdr()}catch(e){}},0);let need=false;
   if(m==="quiz"&&!force){if(i!=null&&!lineLearned(LINES[i])){need=true;m="learn"}else if(i==null&&!pool().some(x=>lineLearned(LINES[x]))){need=true;m="learn"}}
   else if(m==="cards"&&!cardPool().length){need=true;m="learn"}
   if(need){setMode("learn",i);S.needl=true;draw();return}
@@ -1731,7 +1731,7 @@ SHAPES.forEach((s,i)=>opt("o-shape","shape",i,s[0],ST[s[1]]?'<img class="st" alt
 COLORS.forEach((c,i)=>opt("o-color","color",i,c[0],'<i style="background:'+c[1]+'"></i><i style="background:'+c[2]+'"></i>'));
 /* ---- engine: Stockfish in a worker, loaded only when the button is pressed ---- */
 const ENG={m:null,stage:"",why:"",w:null,on:false,ready:false,busy:false,pending:false,key:null,info:null,fail:false,timer:0};
-const PWA=true,APPV="v91";
+const PWA=true,APPV="v92";
 /* version label (home + settings); tap it to check for an update and force it if one is waiting */
 function appvPaint(x){document.querySelectorAll("[data-appv]").forEach(b=>b.textContent=x||(T("النسخة")+" "+APPV+" · "+T("تحقّق من التحديث")))}
 async function appvCheck(){
@@ -2140,7 +2140,18 @@ async function fetchGames(){
   $("g-fetch").disabled=false;$("g-fetch").classList.remove("busy");
 }
 $("g-fetch").addEventListener("click",fetchGames);
-function openAt(c,path){gsheet(false);show("train");if(UI.side!==c)setSide(c);S.ret=null;S.mode="explore";MODE_IDS.forEach(x=>$("m-"+x).setAttribute("aria-pressed",x==="explore"));startEx(path);if(!ENG.on&&!ENG.fail)$("b-eng").click()}
+
+/* ---- free analysis remembers where it was opened from, so back returns there ---- */
+let EXFROM=null;
+function exFromSave(){const gs=$("gsheet")&&!$("gsheet").hidden,tr=$("trsheet")&&!$("trsheet").hidden,eff=!!($("effout")&&$("effout").innerHTML);
+  EXFROM={screen:SCREEN,htab:document.body.dataset.htab,y:window.scrollY||0,gs,gtab:typeof GTAB!=="undefined"?GTAB:"g",tr,eff,op:OPC&&OPC.g,rep:REPB&&REPB.k,plhub:typeof PLHUB!=="undefined"&&PLHUB}}
+function exFromGo(){const f=EXFROM;EXFROM=null;if(!f||f.screen==="train")return false;
+  if(f.screen==="op"&&f.op)opRender(f.op);else if(f.screen==="rep"&&f.rep)repRender(f.rep);else if(f.screen==="lib")libRender();else if(f.screen==="aud"){audRender();show("aud")}
+  else if(f.screen==="pl"){f.plhub?plHub():plRender()}else if(f.screen==="settings")show("settings");
+  else{show("home");htab(f.htab||"home");if(f.htab==="me")setTimeout(()=>{meRender();if(f.eff)effRender()},20)}
+  if(f.gs){GTAB=f.gtab;gsheet(true)}if(f.tr)trOpen(true);
+  setTimeout(()=>{try{window.scrollTo(0,f.y)}catch(e){}},60);return true}
+function openAt(c,path){exFromSave();gsheet(false);show("train");if(UI.side!==c)setSide(c);S.ret=null;S.mode="explore";MODE_IDS.forEach(x=>$("m-"+x).setAttribute("aria-pressed",x==="explore"));startEx(path);if(!ENG.on&&!ENG.fail)$("b-eng").click()}
 function gsheet(open){$("gsheet").hidden=$("scrim").hidden=!open;if(open){$("g-name").value=GM.name||$("g-name").value;gamesRender()}}
 $("b-games").addEventListener("click",()=>gsheet(true));$("g-close").addEventListener("click",()=>gsheet(false));
 $("g-run").addEventListener("click",()=>{$("g-status").innerHTML='<span class="spin"></span>'+T("أحلّل المباريات…");setTimeout(()=>{gamesRun();$("g-status").textContent=""},30)});
@@ -2387,7 +2398,7 @@ function trOpen(open,c){$("trsheet").hidden=$("scrim").hidden=!open;if(open){TRC
 function trSide(){if(UI.side!==TRC||MIX)setSide(TRC)}
 $("trlist").addEventListener("click",e=>{const t=e.target.closest("[data-t]"),g=e.target.closest("[data-tg]"),l=e.target.closest("[data-tl]");
   if(t)trToggle(+t.dataset.t);
-  else if(g){const nd=TRN[+g.dataset.tg];trSide();trOpen(false);setMode("explore");show("train");startEx(nd.path.slice(),null,TRC)}
+  else if(g){const nd=TRN[+g.dataset.tg];exFromSave();trSide();trOpen(false);setMode("explore");show("train");startEx(nd.path.slice(),null,TRC)}
   else if(l){trSide();trOpen(false);setMode("learn",+l.dataset.tl);show("train")}});
 $("tr-w").addEventListener("click",()=>{TRC="w";TRG=null;trRender()});$("tr-b").addEventListener("click",()=>{TRC="b";TRG=null;trRender()});
 $("b-trclose").addEventListener("click",()=>trOpen(false));
@@ -2801,7 +2812,7 @@ document.addEventListener("click",e=>{if(!["rep","op","home","pick","lib","sr"].
   if(gset){show("settings");($("xcard").classList.add("open"),$("xcard").scrollIntoView());return}
   const ga=t.closest("[data-gadd]"),gl=t.closest("[data-glearn]");if(ga)return gapAdd(OPC,+ga.dataset.gadd);if(gl)return opAct("learn",+gl.dataset.glearn);
   if(gs)return gapRun(OPC,+gs.dataset.gscan);
-  if(gp){const o=OPC,g=(XP.g[o.c+"|"+o.g0]||{gaps:[]}).gaps[+gp.dataset.gap];if(g){opFocus(o);setMode("explore");show("train");startEx(g.path.slice(),null,o.c)}return}
+  if(gp){const o=OPC,g=(XP.g[o.c+"|"+o.g0]||{gaps:[]}).gaps[+gp.dataset.gap];if(g){exFromSave();opFocus(o);setMode("explore");show("train");startEx(g.path.slice(),null,o.c)}return}
   if(hm)return show("home");if(bk)return repRender(bk.dataset.bk);if(op){OPBACK="rep";return opRender(op.dataset.op)}if(ac)return opAct(ac.dataset.act);if(dt)return opAct("learn",+dt.dataset.li);
   if(ps){setMode("ps");show("train");ecOpen(+ps.dataset.ps)}});
 /* ---- mix: several openings at once ---- */
@@ -3021,14 +3032,14 @@ function homeRender(){
   $("t-eg").textContent=EG.length?Object.keys(EGS.done).length+T(" من ")+EG.length+T(" وضعية"):"";
   $("t-games").textContent=GLIST.length?GLIST.length+T(" مباراة محفوظة"):T("اجلب مبارياتك بالاسم وحلّلها");
 }
-function show(s){try{histTrap()}catch(e){}if(s==="home"&&TODAYMIX){TODAYMIX=false;MIX=null;try{buildChips()}catch(e){}}SCREEN=s;document.body.dataset.screen=s;try{hdr()}catch(e){}if(s==="home")homeRender();if(s==="settings"){mlRefresh();esRender();xSetRender()}try{window.scrollTo(0,0)}catch(e){}engUpdate();try{myplUpdate()}catch(e){}try{xplUpdate()}catch(e){}}
+function show(s){try{histTrap()}catch(e){}if(s!=="train")EXFROM=null;if(s==="home"&&TODAYMIX){TODAYMIX=false;MIX=null;try{buildChips()}catch(e){}}SCREEN=s;document.body.dataset.screen=s;try{hdr()}catch(e){}if(s==="home")homeRender();if(s==="settings"){mlRefresh();esRender();xSetRender()}try{window.scrollTo(0,0)}catch(e){}engUpdate();try{myplUpdate()}catch(e){}try{xplUpdate()}catch(e){}}
 document.body.dataset.htab="home";
 function htab(k){try{histTrap()}catch(e){}PATHRUN=false;if(k==="me")setTimeout(()=>{try{meRender()}catch(e){console.error(e)}},0);if(k==="pz"){PF=PFA;PFK="d4trainer-pzf";wpUse("pz");setMode("wp");show("train");return}document.body.dataset.htab=k;document.querySelectorAll("#bnav button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tab===k));try{window.scrollTo(0,0)}catch(e){}}
 $("bnav").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(b)htab(b.dataset.tab)});
 let backArm=0;
 function guardBack(){if(SCREEN!=="train")return false;const busy=(EX()&&S.ex.length>0&&!S.ret)||(BT()&&S.botv!=="setup"&&!BOT.over&&S.exl.m.length>1)||(WPM()&&S.wpv==="run"&&!S.wpFree)||(S.mode==="quiz"&&S.ply>0&&!S.done)||(GAME()&&S.v>0);
   if(!busy||Date.now()-backArm<2500)return false;backArm=Date.now();toast(T("اضغط مرة أخرى للخروج"));return true}
-$("b-home").addEventListener("click",()=>{if(SCREEN==="train"&&EX()&&S.ret)return goBack();if(guardBack())return;if(REV.on)revToggle();
+$("b-home").addEventListener("click",()=>{if(SCREEN==="train"&&EX()&&S.ret)return goBack();if(SCREEN==="train"&&EX()&&EXFROM&&exFromGo())return;if(guardBack())return;if(REV.on)revToggle();
   if(SCREEN==="train"&&PATHRUN){PATHRUN=false;return pathRender()}
   if(SCREEN==="pl"&&!PLHUB)return plHub();
   if(SCREEN==="train"){const g=S.mode==="game"&&S.exl&&S.exl.game;if(g&&g.plk)return plRender();if(g&&g.classic)return clPlayer(g.p);if(WPM()&&PF===PFM){PF=PFA;PFK="d4trainer-pzf";return plRender()}if(g&&g.mop&&OPC)return opRender(OPC.g);if(OPC&&!MIX&&["learn","quiz","daily","cards"].includes(S.mode))return opRender(OPC.g);return show("home")}
@@ -3060,7 +3071,7 @@ function hdr(){let t=T("مدرّب الافتتاحيات"),sub="";
     else if(MIX&&["daily","learn","quiz","cards"].includes(S.mode))sub=T("تدريب مختلط")+" · "+MIX.size;
     else if(["daily","learn","quiz","cards"].includes(S.mode)){const g=[...SEL];sub=g.length===1?opName(g[0]):g.length?g.length+" "+T("افتتاحيات"):T("ريبرتوارك كاملاً")}}
   t=bidiMv(t);sub=bidiMv(sub);$("ttl").textContent=t;$("total").textContent=sub;$("total").hidden=!sub;document.title=t===T("مدرّب الافتتاحيات")?"Opening Trainer":t+" · Opening Trainer"}
-$("home").addEventListener("click",e=>{if(e.target.closest("[data-pl]"))return plHub();if(e.target.closest("[data-sr]"))return srRender();if(e.target.closest("[data-cl]"))return clHome();if(e.target.closest("[data-guide]"))return gdOpen(true);if(e.target.closest("[data-tree]")){TRG=null;return trOpen(true)}const b=e.target.closest("[data-go]");if(!b)return;if(b.dataset.go==="wp")wpUse(b.dataset.wk||"wp");setMode(b.dataset.go);show("train")});
+$("home").addEventListener("click",e=>{if(e.target.closest("[data-pl]"))return plHub();if(e.target.closest("[data-sr]"))return srRender();if(e.target.closest("[data-cl]"))return clHome();if(e.target.closest("[data-guide]"))return gdOpen(true);if(e.target.closest("[data-tree]")){TRG=null;return trOpen(true)}const b=e.target.closest("[data-go]");if(!b)return;if(b.dataset.go==="explore")exFromSave();if(b.dataset.go==="wp")wpUse(b.dataset.wk||"wp");setMode(b.dataset.go);show("train")});
 
 
 /* ---- phone back button: handled inside the app (close a sheet, go up one screen); on the home screen a second press leaves ---- */
