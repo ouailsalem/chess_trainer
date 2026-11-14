@@ -1669,7 +1669,7 @@ SHAPES.forEach((s,i)=>opt("o-shape","shape",i,s[0],ST[s[1]]?'<img class="st" alt
 COLORS.forEach((c,i)=>opt("o-color","color",i,c[0],'<i style="background:'+c[1]+'"></i><i style="background:'+c[2]+'"></i>'));
 /* ---- engine: Stockfish in a worker, loaded only when the button is pressed ---- */
 const ENG={m:null,stage:"",why:"",w:null,on:false,ready:false,busy:false,pending:false,key:null,info:null,fail:false,timer:0};
-const PWA=true,APPV="v83";
+const PWA=true,APPV="v84";
 /* version label (home + settings); tap it to check for an update and force it if one is waiting */
 function appvPaint(x){document.querySelectorAll("[data-appv]").forEach(b=>b.textContent=x||(T("النسخة")+" "+APPV+" · "+T("تحقّق من التحديث")))}
 async function appvCheck(){
@@ -3012,6 +3012,7 @@ function histBack(){
   if(!done)for(const [id,f] of SH){const el=$(id);if(el&&!el.hidden){try{f()}catch(e){el.hidden=true;$("scrim").hidden=true}done=true;break}}
   if(!done){
     if(SCREEN==="home"){if(document.body.dataset.htab!=="home")htab("home");else{exitArm=Date.now();toast(T("اضغط مرة أخرى للخروج"));setTimeout(()=>{if(Date.now()-exitArm>=2400)histTrap()},2500);return}}
+    else if(SCREEN==="train"&&EX()&&S.ret)goBack();   /* analysing from a line or game: back returns to it */
     else $("b-home").click()}
   history.pushState({d4:1},"")}
 $("board").addEventListener("contextmenu",e=>e.preventDefault());
