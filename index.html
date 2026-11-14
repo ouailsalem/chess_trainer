@@ -1731,7 +1731,7 @@ SHAPES.forEach((s,i)=>opt("o-shape","shape",i,s[0],ST[s[1]]?'<img class="st" alt
 COLORS.forEach((c,i)=>opt("o-color","color",i,c[0],'<i style="background:'+c[1]+'"></i><i style="background:'+c[2]+'"></i>'));
 /* ---- engine: Stockfish in a worker, loaded only when the button is pressed ---- */
 const ENG={m:null,stage:"",why:"",w:null,on:false,ready:false,busy:false,pending:false,key:null,info:null,fail:false,timer:0};
-const PWA=true,APPV="v92";
+const PWA=true,APPV="v93";
 /* version label (home + settings); tap it to check for an update and force it if one is waiting */
 function appvPaint(x){document.querySelectorAll("[data-appv]").forEach(b=>b.textContent=x||(T("النسخة")+" "+APPV+" · "+T("تحقّق من التحديث")))}
 async function appvCheck(){
@@ -3209,9 +3209,10 @@ const covFam=n=>{if(GENERIC.has(n.fam)){const v=n.full.split(": ")[1]||n.fam;ret
 let COVI=null;   /* every library line indexed by the positions it passes through */
 function covIdx(){if(COVI)return COVI;COVI=new Map();LINES.forEach((l,i)=>{if(l.fen||l.off||!l.u||l.sp)return;const b=startBoard();let w=true;l.u.forEach(u=>{applyMove(b,u);w=!w;const k=l.c+posKeyB(b,w);let s=COVI.get(k);if(!s)COVI.set(k,s=new Set());s.add(i)})});return COVI}
 /* which library family would fill this hole? */
-function covFix(g){const s=covIdx().get(g.c+g.key);if(!s)return null;const F=famsAll(),cnt=new Map();
-  s.forEach(i=>{if(inFav(LINES[i]))return;const f=F.find(x=>x.ops.some(o=>o.ls.includes(i)));if(!f)return;const e=cnt.get(f.id)||{f,ops:new Set(),n:0};e.n++;f.ops.forEach(o=>{if(o.ls.includes(i))e.ops.add(okey(o))});cnt.set(f.id,e)});
-  return [...cnt.values()].sort((a,b)=>b.n-a.n)[0]||null}
+/* which library section (opening group) would fill this hole? the one with the most lines through this position */
+function covFix(g){const s=covIdx().get(g.c+g.key);if(!s)return null;const cnt=new Map();
+  BK.forEach(b=>bkOps(b).forEach(o=>{if(FAV.has(okey(o))||b.c!==g.c)return;const n=o.ls.filter(i=>s.has(i)).length;if(n)cnt.set(okey(o),{o,n})}));
+  const best=[...cnt.values()].sort((a,b)=>b.n-a.n)[0];if(!best)return null;return {ops:new Set([okey(best.o)]),n:best.n,name:opName(best.o.g),tot:best.o.ls.length}}
 const pc=x=>Math.max(1,Math.round(x*100))+"%";
 function effRender(){const out=$("effout");if(!out)return;
   const R={w:covCalc("w"),b:covCalc("b")},bar=(t,v)=>'<div><span>'+t+'</span><i><u style="width:'+Math.round(v*100)+'%"></u></i><b>'+pc(v)+'</b></div>';
@@ -3229,7 +3230,7 @@ function effRender(){const out=$("effout");if(!out)return;
   const item=(e,i)=>{const g=e.g,fx=e.fx,nm=e.n?covFam(e.n):"",vs=[...e.vars].slice(0,3);
       return '<li class="'+(e.imp>=.04?"hi":"")+'"><span><b>'+(nm?bidiMv(esc(nm)):'<bdi dir="ltr">'+covSan(g.path,g.u)+'</bdi>')+'</b>'+(e.n&&LANG==="ar"&&nm!==e.n.full?' <small dir="ltr">'+esc(GENERIC.has(e.n.fam)?e.n.full:e.n.fam)+'</small>':'')+'</span>'+(vs.length?'<small dir="ltr">'+esc(vs.join(" · "))+(e.vars.size>3?" …":"")+'</small>':'')+
         '<small>'+(e.c==="w"?T("بالأبيض"):T("بالأسود"))+" · "+'<bdi dir="ltr">'+covSan(g.path,g.u)+'</bdi>'+'</small>'+
-        '<span class="ar" style="display:flex;gap:6px;flex-wrap:wrap">'+(fx?'<button class="btn pri" data-ea="fix" data-ev="'+i+'">'+T("أضف")+" "+famName(fx.f)+" ("+lnN(fx.n)+')</button>':'<span class="soon">'+T("قريباً")+'</span>')+'<button class="btn" data-ea="gap" data-ev="'+i+'">'+T("حلّلها")+'</button></span></li>'};
+        '<span class="ar" style="display:flex;gap:6px;flex-wrap:wrap">'+(fx?'<button class="btn pri" data-ea="fix" data-ev="'+i+'">'+T("أضف")+" «"+fx.name+"» ("+lnN(fx.tot)+')</button>':'<span class="soon">'+T("قريباً")+'</span>')+'<button class="btn" data-ea="gap" data-ev="'+i+'">'+T("حلّلها")+'</button></span></li>'};
   const main=list.map((e,i)=>[e,i]).filter(x=>x[0].imp>=.01),rare=list.map((e,i)=>[e,i]).filter(x=>x[0].imp<.01);
   h+='<h3 class="pkq">'+T("افتتاحيات قد تواجهها وليس عندك رد عليها")+'</h3>'+(main.length?'<ul class="sugg">'+main.map(x=>item(x[0],x[1])).join("")+'</ul>':'<p class="hintp">'+T("لا ثغرات مهمة. ريبرتوارك يغطي ما يُلعب عادة.")+'</p>')+
     (rare.length?'<details class="pkmore"><summary>'+T("نادرة")+" ("+rare.length+')</summary><ul class="sugg">'+rare.map(x=>item(x[0],x[1])).join("")+'</ul></details>':'');
