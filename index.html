@@ -1669,7 +1669,7 @@ SHAPES.forEach((s,i)=>opt("o-shape","shape",i,s[0],ST[s[1]]?'<img class="st" alt
 COLORS.forEach((c,i)=>opt("o-color","color",i,c[0],'<i style="background:'+c[1]+'"></i><i style="background:'+c[2]+'"></i>'));
 /* ---- engine: Stockfish in a worker, loaded only when the button is pressed ---- */
 const ENG={m:null,stage:"",why:"",w:null,on:false,ready:false,busy:false,pending:false,key:null,info:null,fail:false,timer:0};
-const PWA=true,APPV="v84";
+const PWA=true,APPV="v85";
 /* version label (home + settings); tap it to check for an update and force it if one is waiting */
 function appvPaint(x){document.querySelectorAll("[data-appv]").forEach(b=>b.textContent=x||(T("النسخة")+" "+APPV+" · "+T("تحقّق من التحديث")))}
 async function appvCheck(){
@@ -2966,7 +2966,7 @@ $("bnav").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if
 let backArm=0;
 function guardBack(){if(SCREEN!=="train")return false;const busy=(EX()&&S.ex.length>0&&!S.ret)||(BT()&&S.botv!=="setup"&&!BOT.over&&S.exl.m.length>1)||(WPM()&&S.wpv==="run"&&!S.wpFree)||(S.mode==="quiz"&&S.ply>0&&!S.done)||(GAME()&&S.v>0);
   if(!busy||Date.now()-backArm<2500)return false;backArm=Date.now();toast(T("اضغط مرة أخرى للخروج"));return true}
-$("b-home").addEventListener("click",()=>{if(guardBack())return;if(REV.on)revToggle();
+$("b-home").addEventListener("click",()=>{if(SCREEN==="train"&&EX()&&S.ret)return goBack();if(guardBack())return;if(REV.on)revToggle();
   if(SCREEN==="train"&&PATHRUN){PATHRUN=false;return pathRender()}
   if(SCREEN==="pl"&&!PLHUB)return plHub();
   if(SCREEN==="train"){const g=S.mode==="game"&&S.exl&&S.exl.game;if(g&&g.plk)return plRender();if(g&&g.classic)return clPlayer(g.p);if(WPM()&&PF===PFM){PF=PFA;PFK="d4trainer-pzf";return plRender()}if(g&&g.mop&&OPC)return opRender(OPC.g);if(OPC&&!MIX&&["learn","quiz","daily","cards"].includes(S.mode))return opRender(OPC.g);return show("home")}
