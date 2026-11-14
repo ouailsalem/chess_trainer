@@ -42,45 +42,11 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: Native Stockfish and the plugin that runs it
+      - name: Lichess sign-in return (native plugin)
         working-directory: apk
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
-          set -e
-          curl -fsSL -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/official-stockfish/Stockfish/releases?per_page=10" > /tmp/rels.json
-          python3 - <<'PY' > /tmp/urls.txt
-          import json
-          rs=[r for r in json.load(open("/tmp/rels.json")) if r["tag_name"].startswith("sf_")]
-          def pick(r,arch):
-              for a in r["assets"]:
-                  n=a["name"].lower()
-                  if "android" in n and "dotprod" not in n and any(x in n for x in arch): return a["browser_download_url"]
-          for r in rs:
-              a64=pick(r,["arm64","armv8"]);a32=pick(r,["armv7-neon","armv7"])
-              if a64:
-                  print("arm64-v8a",a64)
-                  pass  # 32-bit phones keep the built-in browser engine (keeps the APK ~90 MB instead of ~170 MB)
-                  break
-          PY
-          cat /tmp/urls.txt
-          while read abi url; do
-            rm -rf /tmp/sf && mkdir -p /tmp/sf && curl -fsSL "$url" -o /tmp/sf/pkg && tar -xf /tmp/sf/pkg -C /tmp/sf
-            bin=$(find /tmp/sf -type f -iname 'stockfish*android*' ! -iname '*.tar*' | head -1)
-            echo "$abi <- $bin"; ls -la "$bin"
-            mkdir -p android/app/src/main/jniLibs/$abi && cp "$bin" android/app/src/main/jniLibs/$abi/libstockfish.so
-          done < /tmp/urls.txt
-          test -f android/app/src/main/jniLibs/arm64-v8a/libstockfish.so
           D=android/app/src/main/java/io/github/ouailsalem/chesstrainer
-          mkdir -p $D && cp native/StockfishPlugin.java native/MainActivity.java $D/
-          python3 - <<'PY'
-          import re
-          p="android/app/build.gradle";s=open(p).read()
-          s+="\nandroid { packagingOptions { jniLibs { useLegacyPackaging = true } } }\n"
-          open(p,"w").write(s)
-          PY
-          tail -3 android/app/build.gradle
+          mkdir -p $D && cp native/AuthPlugin.java native/MainActivity.java $D/
 
       - name: App icon
         working-directory: apk
