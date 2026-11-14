@@ -61,7 +61,7 @@ jobs:
               a64=pick(r,["arm64","armv8"]);a32=pick(r,["armv7-neon","armv7"])
               if a64:
                   print("arm64-v8a",a64)
-                  if a32: print("armeabi-v7a",a32)
+                  pass  # 32-bit phones keep the built-in browser engine (keeps the APK ~90 MB instead of ~170 MB)
                   break
           PY
           cat /tmp/urls.txt
