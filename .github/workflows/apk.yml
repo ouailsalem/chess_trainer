@@ -49,11 +49,21 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -e
-          url=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/official-stockfish/Stockfish/releases/latest \
-            | python3 -c "import json,sys;d=json.load(sys.stdin);print(next(a['browser_download_url'] for a in d['assets'] if a['name'].startswith('stockfish-android-armv8') and 'dotprod' not in a['name']))")
+          curl -fsSL -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/official-stockfish/Stockfish/releases?per_page=8" > /tmp/rels.json
+          url=$(python3 - <<'PY'
+          import json
+          rs=json.load(open("/tmp/rels.json"))
+          for r in rs:
+              names=[a["name"] for a in r["assets"]]
+              print("release",r["tag_name"],[n for n in names if "android" in n.lower()],file=__import__("sys").stderr)
+              c=[a for a in r["assets"] if "android" in a["name"].lower() and "armv8" in a["name"].lower() and "dotprod" not in a["name"].lower()]
+              if c:
+                  print(c[0]["browser_download_url"]);break
+          PY
+          )
           echo "Stockfish: $url"
-          mkdir -p /tmp/sf && curl -fsSL "$url" -o /tmp/sf/sf.tar && tar -xf /tmp/sf/sf.tar -C /tmp/sf
-          bin=$(find /tmp/sf -type f -name 'stockfish-android-armv8*' ! -name '*.tar' | head -1)
+          mkdir -p /tmp/sf && curl -fsSL "$url" -o /tmp/sf/pkg && (tar -xf /tmp/sf/pkg -C /tmp/sf || unzip -o /tmp/sf/pkg -d /tmp/sf) && find /tmp/sf -type f | head
+          bin=$(find /tmp/sf -type f -iname 'stockfish*android*armv8*' ! -iname '*.tar' ! -iname '*.zip' | head -1)
           echo "binary: $bin"; ls -la "$bin"
           mkdir -p android/app/src/main/jniLibs/arm64-v8a
           cp "$bin" android/app/src/main/jniLibs/arm64-v8a/libstockfish.so
