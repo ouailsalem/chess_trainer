@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" translate="no">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Opening Trainer</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -665,6 +666,10 @@ details.ldet summary{cursor:pointer;color:var(--accent);font-weight:600;font-siz
 .opacts button:last-child:nth-child(even){grid-column:1/-1}
 #settings .row>b{flex:0 0 9.5em;min-width:0}#settings .row .inp{flex:1;min-width:0;width:auto}
 #settings .row{flex-wrap:nowrap}#settings .row .opts{flex-wrap:wrap}
+/* app-like touch: no text-selection / translate bubble on long press (inputs and notes still selectable) */
+body{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+input,textarea,[contenteditable],.mynote textarea{-webkit-touch-callout:default;-webkit-user-select:text;user-select:text}
+img{-webkit-user-drag:none}
 </style>
 </head>
 <body>
@@ -1661,7 +1666,7 @@ SHAPES.forEach((s,i)=>opt("o-shape","shape",i,s[0],ST[s[1]]?'<img class="st" alt
 COLORS.forEach((c,i)=>opt("o-color","color",i,c[0],'<i style="background:'+c[1]+'"></i><i style="background:'+c[2]+'"></i>'));
 /* ---- engine: Stockfish in a worker, loaded only when the button is pressed ---- */
 const ENG={m:null,stage:"",why:"",w:null,on:false,ready:false,busy:false,pending:false,key:null,info:null,fail:false,timer:0};
-const PWA=true,APPV="v81";
+const PWA=true,APPV="v82";
 /* version label (home + settings); tap it to check for an update and force it if one is waiting */
 function appvPaint(x){document.querySelectorAll("[data-appv]").forEach(b=>b.textContent=x||(T("النسخة")+" "+APPV+" · "+T("تحقّق من التحديث")))}
 async function appvCheck(){
@@ -2951,9 +2956,9 @@ function homeRender(){
   $("t-eg").textContent=EG.length?Object.keys(EGS.done).length+T(" من ")+EG.length+T(" وضعية"):"";
   $("t-games").textContent=GLIST.length?GLIST.length+T(" مباراة محفوظة"):T("اجلب مبارياتك بالاسم وحلّلها");
 }
-function show(s){if(s==="home"&&TODAYMIX){TODAYMIX=false;MIX=null;try{buildChips()}catch(e){}}SCREEN=s;document.body.dataset.screen=s;try{hdr()}catch(e){}if(s==="home")homeRender();if(s==="settings"){mlRefresh();esRender();xSetRender()}try{window.scrollTo(0,0)}catch(e){}engUpdate();try{myplUpdate()}catch(e){}try{xplUpdate()}catch(e){}}
+function show(s){try{histTrap()}catch(e){}if(s==="home"&&TODAYMIX){TODAYMIX=false;MIX=null;try{buildChips()}catch(e){}}SCREEN=s;document.body.dataset.screen=s;try{hdr()}catch(e){}if(s==="home")homeRender();if(s==="settings"){mlRefresh();esRender();xSetRender()}try{window.scrollTo(0,0)}catch(e){}engUpdate();try{myplUpdate()}catch(e){}try{xplUpdate()}catch(e){}}
 document.body.dataset.htab="home";
-function htab(k){PATHRUN=false;if(k==="pz"){PF=PFA;PFK="d4trainer-pzf";wpUse("pz");setMode("wp");show("train");return}document.body.dataset.htab=k;document.querySelectorAll("#bnav button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tab===k));try{window.scrollTo(0,0)}catch(e){}}
+function htab(k){try{histTrap()}catch(e){}PATHRUN=false;if(k==="pz"){PF=PFA;PFK="d4trainer-pzf";wpUse("pz");setMode("wp");show("train");return}document.body.dataset.htab=k;document.querySelectorAll("#bnav button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tab===k));try{window.scrollTo(0,0)}catch(e){}}
 $("bnav").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(b)htab(b.dataset.tab)});
 let backArm=0;
 function guardBack(){if(SCREEN!=="train")return false;const busy=(EX()&&S.ex.length>0&&!S.ret)||(BT()&&S.botv!=="setup"&&!BOT.over&&S.exl.m.length>1)||(WPM()&&S.wpv==="run"&&!S.wpFree)||(S.mode==="quiz"&&S.ply>0&&!S.done)||(GAME()&&S.v>0);
@@ -2992,6 +2997,21 @@ function hdr(){let t=T("مدرّب الافتتاحيات"),sub="";
   t=bidiMv(t);sub=bidiMv(sub);$("ttl").textContent=t;$("total").textContent=sub;$("total").hidden=!sub;document.title=t===T("مدرّب الافتتاحيات")?"Opening Trainer":t+" · Opening Trainer"}
 $("home").addEventListener("click",e=>{if(e.target.closest("[data-pl]"))return plHub();if(e.target.closest("[data-sr]"))return srRender();if(e.target.closest("[data-cl]"))return clHome();if(e.target.closest("[data-guide]"))return gdOpen(true);if(e.target.closest("[data-tree]")){TRG=null;return trOpen(true)}const b=e.target.closest("[data-go]");if(!b)return;if(b.dataset.go==="wp")wpUse(b.dataset.wk||"wp");setMode(b.dataset.go);show("train")});
 
+
+/* ---- phone back button: handled inside the app (close a sheet, go up one screen); on the home screen a second press leaves ---- */
+let HIST_OK=false,HIST_IN=false,exitArm=0;
+function histTrap(){if(!HIST_OK||HIST_IN)return;if(!history.state||history.state.d4!==1)history.pushState({d4:1},"")}
+try{const hs=history.state;if(!hs||hs.d4==null){history.replaceState({d4:0},"");history.pushState({d4:1},"")}else if(hs.d4===0)history.pushState({d4:1},"");HIST_OK=true}catch(e){}
+addEventListener("popstate",()=>{if(!HIST_OK)return;HIST_IN=true;try{histBack()}finally{HIST_IN=false}});
+function histBack(){
+  const SH=[["gsheet",()=>gsheet(false)],["mxsheet",()=>mxOpen(false)],["ldsheet",()=>ldOpen(false)],["trsheet",()=>trOpen(false)],["gdsheet",()=>gdOpen(false)],["lsheet",()=>lsheet(false)],["drawer",()=>drawer(false)]];
+  let done=false;const bo=document.querySelector(".bdgov");if(bo){bo.remove();done=true}
+  if(!done)for(const [id,f] of SH){const el=$(id);if(el&&!el.hidden){try{f()}catch(e){el.hidden=true;$("scrim").hidden=true}done=true;break}}
+  if(!done){
+    if(SCREEN==="home"){if(document.body.dataset.htab!=="home")htab("home");else{exitArm=Date.now();toast(T("اضغط مرة أخرى للخروج"));setTimeout(()=>{if(Date.now()-exitArm>=2400)histTrap()},2500);return}}
+    else $("b-home").click()}
+  history.pushState({d4:1},"")}
+$("board").addEventListener("contextmenu",e=>e.preventDefault());
 /* ---- backup ---- */
 function bkDump(){const o={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.indexOf("d4trainer")===0)o[k]=localStorage.getItem(k)}}catch(e){}return JSON.stringify({app:"opening-trainer",v:1,when:new Date().toISOString(),data:o})}
 $("bk-copy").addEventListener("click",()=>{bkMark();const txt=bkDump(),st=$("bk-status"),fb=()=>{$("bk-text").value=txt;st.textContent=T("النسخة في خانة النص: انسخها من هناك واحفظها في مكان آمن.")};
